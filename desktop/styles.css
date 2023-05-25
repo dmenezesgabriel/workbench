@@ -1,0 +1,66 @@
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #d3d3d3;
+  font-family: Arial, sans-serif;
+}
+
+#taskbar {
+  background-color: #000;
+  color: #fff;
+  height: 40px;
+  padding: 5px;
+}
+
+#start-button {
+  width: 60px;
+  height: 30px;
+  background-color: #00a2e8;
+  color: #fff;
+  padding: 5px;
+  cursor: pointer;
+}
+
+.window {
+  position: absolute;
+  top: 100px;
+  left: 100px;
+  width: 400px;
+  height: 300px;
+  background-color: #fff;
+  border: 1px solid #000;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.title-bar {
+  background-color: #00a2e8;
+  color: #fff;
+  height: 25px;
+  padding: 5px;
+  cursor: move;
+}
+
+.title {
+  float: left;
+}
+
+.buttons {
+  float: right;
+}
+
+.buttons div {
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  margin-left: 5px;
+  background-color: #ccc;
+  cursor: pointer;
+}
+
+.content {
+  height: 100%;
+  padding: 5px;
+}
+
+/* Add more CSS styles if needed */

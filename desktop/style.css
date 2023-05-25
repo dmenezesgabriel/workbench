@@ -1,0 +1,80 @@
+body {
+  margin: 0;
+  padding: 0;
+}
+
+#taskbar {
+  background-color: #1c1c1c;
+  height: 30px;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  color: white;
+}
+
+#startButton {
+  background-color: #2d89ef;
+  color: white;
+  padding: 4px 10px;
+  border-radius: 3px;
+}
+
+#clock {
+  margin-left: auto;
+}
+
+.window {
+  position: absolute;
+  top: 100px;
+  left: 100px;
+  width: 300px;
+  height: 200px;
+  background-color: white;
+  border: 1px solid #ccc;
+}
+
+.titleBar {
+  background-color: #1c1c1c;
+  color: white;
+  height: 30px;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+}
+
+.title {
+  flex-grow: 1;
+  margin-right: 10px;
+}
+
+.controls {
+  display: flex;
+}
+
+.controls div {
+  width: 12px;
+  height: 12px;
+  margin-left: 5px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.minimize {
+  background-color: #7ed321;
+}
+
+.maximize {
+  background-color: #f8e71c;
+}
+
+.close {
+  background-color: #ff3b30;
+}
+
+.content {
+  padding: 10px;
+}

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TODO App</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+
+  <body>
+    <nav>
+      <div class="navbar">
+        <span class="navbar-title">TODO App</span>
+        <button id="theme-toggle" class="toggle-button">Toggle Theme</button>
+      </div>
+    </nav>
+
+    <div class="container">
+      <div class="controls">
+        <input id="todo-input" type="text" placeholder="Enter a TODO" />
+        <button id="add-button">Add TODO</button>
+      </div>
+      <ul id="preview-list" class="preview-list"></ul>
+    </div>
+
+    <div id="edit-modal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <input id="edit-input" type="text" />
+        <button id="save-button">Save</button>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>

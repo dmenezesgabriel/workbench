@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Windows Desktop Simulation</title>
+    <style>
+      body {
+        background-color: #ccc;
+        margin: 0;
+        padding: 0;
+      }
+
+      #taskbar {
+        background-color: #1a1a1a;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 40px;
+        z-index: 9999;
+      }
+
+      #start-button {
+        background-color: #00ff00;
+        width: 40px;
+        height: 100%;
+        float: left;
+      }
+
+      .taskbar-button {
+        display: inline-block;
+        background-color: #333;
+        color: white;
+        padding: 5px 10px;
+        margin: 5px;
+        cursor: pointer;
+      }
+
+      .window {
+        background-color: #f5f5f5;
+        border: 1px solid #aaa;
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+        position: absolute;
+        top: 100px;
+        left: 100px;
+        width: 300px;
+        height: 200px;
+        z-index: 1;
+        resize: both;
+        overflow: auto;
+      }
+
+      .window .title-bar {
+        background-color: #1a1a1a;
+        color: #fff;
+        padding: 5px;
+        cursor: move;
+      }
+
+      .window .title-bar .buttons {
+        float: right;
+      }
+
+      .window .title-bar .buttons button {
+        background-color: #00ff00;
+        border: none;
+        border-radius: 50%;
+        width: 15px;
+        height: 15px;
+        margin-left: 5px;
+        cursor: pointer;
+      }
+
+      .window .title-bar .buttons button.minimize {
+        background-color: #ffff00;
+      }
+
+      .window .title-bar .buttons button.close {
+        background-color: #ff0000;
+      }
+
+      #desktop-icons {
+        position: fixed;
+        top: 80px;
+        left: 10px;
+        z-index: 0;
+      }
+
+      .desktop-icon {
+        display: inline-block;
+        text-align: center;
+        width: 80px;
+        margin: 10px;
+      }
+
+      .desktop-icon img {
+        width: 64px;
+        height: 64px;
+      }
+
+      .desktop-icon span {
+        display: block;
+        margin-top: 5px;
+        font-size: 12px;
+        color: #000;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="taskbar">
+      <div id="start-button"></div>
+    </div>
+
+    <div id="desktop-icons">
+      <div class="desktop-icon" id="trash-icon">
+        <img src="trash_icon.png" alt="Trash" />
+        <span>Trash</span>
+      </div>
+      <div class="desktop-icon" id="my-computer-icon">
+        <img src="my_computer_icon.png" alt="My Computer" />
+        <span>My Computer</span>
+      </div>
+      <div class="desktop-icon" id="internet-explorer-icon">
+        <img src="internet_explorer_icon.png" alt="Internet Explorer" />
+        <span>Internet Explorer</span>
+      </div>
+    </div>
+
+    <script>
+      var taskbar = document.getElementById("taskbar");
+      var taskbarButtons = [];
+
+      var icons = document.getElementsByClassName("desktop-icon");
+      for (var i = 0; i < icons.length; i++) {
+        icons[i].addEventListener("click", createWindow);
+      }
+
+      function createWindow() {
+        var iconName = this.id;
+        var windowId = "window-" + Date.now();
+
+        var window = document.createElement("div");
+        window.className = "window";
+        window.id = windowId;
+
+        var titleBar = document.createElement("div");
+        titleBar.className = "title-bar";
+        titleBar.innerText = iconName;
+        var buttons = document.createElement("div");
+        buttons.className = "buttons";
+        var minimizeButton = createWindowButton("minimize");
+        var maximizeButton = createWindowButton("maximize");
+        var closeButton = createWindowButton("close");
+        buttons.appendChild(minimizeButton);
+        buttons.appendChild(maximizeButton);
+        buttons.appendChild(closeButton);
+        titleBar.appendChild(buttons);
+        window.appendChild(titleBar);
+
+        var content = document.createElement("div");
+        content.className = "content";
+        // Window content goes here...
+        window.appendChild(content);
+
+        document.body.appendChild(window);
+
+        dragElement(window);
+
+        minimizeButton.addEventListener("click", minimizeWindow);
+        maximizeButton.addEventListener("click", maximizeWindow);
+        closeButton.addEventListener("click", closeWindow);
+
+        function createWindowButton(type) {
+          var button = document.createElement("button");
+          button.className = type;
+          return button;
+        }
+      }
+
+      // Make the windows draggable
+      function dragElement(element) {
+        var pos1 = 0,
+          pos2 = 0,
+          pos3 = 0,
+          pos4 = 0;
+        var titleBar = element.getElementsByClassName("title-bar")[0];
+
+        if (titleBar) {
+          titleBar.onmousedown = dragMouseDown;
+        } else {
+          element.onmousedown = dragMouseDown;
+        }
+
+        function dragMouseDown(e) {
+          e = e || window.event;
+          e.preventDefault();
+          pos3 = e.clientX;
+          pos4 = e.clientY;
+          document.onmouseup = closeDragElement;
+          document.onmousemove = elementDrag;
+        }
+
+        function elementDrag(e) {
+          e = e || window.event;
+          e.preventDefault();
+          pos1 = pos3 - e.clientX;
+          pos2 = pos4 - e.clientY;
+          pos3 = e.clientX;
+          pos4 = e.clientY;
+          element.style.top = element.offsetTop - pos2 + "px";
+          element.style.left = element.offsetLeft - pos1 + "px";
+        }
+
+        function closeDragElement() {
+          document.onmouseup = null;
+          document.onmousemove = null;
+        }
+      }
+
+      function minimizeWindow() {
+        var window = this.parentNode.parentNode.parentNode;
+        window.style.display = "none";
+
+        var windowId = window.id;
+        var taskbarButton = createTaskbarButton(windowId);
+        taskbar.appendChild(taskbarButton);
+        taskbarButtons.push(taskbarButton);
+      }
+
+      function maximizeWindow() {
+        var window = this.parentNode.parentNode.parentNode;
+
+        if (window.style.width === "100%" && window.style.height === "100%") {
+          window.style.width = "300px";
+          window.style.height = "200px";
+          window.style.top = "100px";
+          window.style.left = "100px";
+        } else {
+          window.style.width = "100%";
+          window.style.height = "100%";
+          window.style.top = "0";
+          window.style.left = "0";
+        }
+      }
+
+      function closeWindow() {
+        var window = this.parentNode.parentNode.parentNode;
+        window.parentNode.removeChild(window);
+      }
+
+      function createTaskbarButton(windowId) {
+        var button = document.createElement("div");
+        button.className = "taskbar-button";
+        button.innerText = windowId;
+        button.addEventListener("click", restoreWindow.bind(null, windowId));
+        return button;
+      }
+
+      function restoreWindow(windowId) {
+        var window = document.getElementById(windowId);
+        window.style.display = "block";
+        taskbarButtons = taskbarButtons.filter(function (button) {
+          if (button.innerText === windowId) {
+            button.parentNode.removeChild(button);
+            return false;
+          }
+          return true;
+        });
+      }
+    </script>
+  </body>
+</html>

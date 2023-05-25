@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Pivot Table</title>
+    <style>
+      .dropzone {
+        border: 2px dashed #ccc;
+        padding: 20px;
+        text-align: center;
+        margin: 20px;
+      }
+      .draggable {
+        cursor: move;
+        background-color: #f2f2f2;
+        padding: 5px;
+        margin: 5px;
+        display: inline-block;
+      }
+      .table-container {
+        margin: 20px;
+      }
+      table {
+        border-collapse: collapse;
+        margin-top: 10px;
+      }
+      th,
+      td {
+        border: 1px solid #ccc;
+        padding: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="dropzone" id="dropzone">
+      <h3>Drag and Drop CSV File Here</h3>
+    </div>
+    <div>
+      <h3>Columns</h3>
+      <div class="dropzone" id="columns"></div>
+    </div>
+    <div>
+      <h3>Rows</h3>
+      <div class="dropzone" id="rows"></div>
+    </div>
+    <div class="table-container">
+      <table id="pivotTable"></table>
+    </div>
+
+    <script>
+      const dropzone = document.getElementById("dropzone");
+      const columnsDropzone = document.getElementById("columns");
+      const rowsDropzone = document.getElementById("rows");
+      const pivotTable = document.getElementById("pivotTable");
+      let data = [];
+
+      dropzone.addEventListener("dragover", handleDragOver, false);
+      dropzone.addEventListener("drop", handleFileDrop, false);
+
+      function handleDragOver(event) {
+        event.stopPropagation();
+        event.preventDefault();
+        event.dataTransfer.dropEffect = "copy";
+      }
+
+      function handleFileDrop(event) {
+        event.stopPropagation();
+        event.preventDefault();
+
+        const file = event.dataTransfer.files[0];
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+          const contents = e.target.result;
+          data = parseCSV(contents);
+          renderColumns(data[0]);
+        };
+
+        reader.readAsText(file);
+      }
+
+      function parseCSV(csv) {
+        const lines = csv.split("\n");
+        const headers = lines[0].split(",");
+
+        const rows = [];
+        for (let i = 1; i < lines.length; i++) {
+          const row = lines[i].split(",");
+          if (row.length === headers.length) {
+            const obj = {};
+            for (let j = 0; j < headers.length; j++) {
+              obj[headers[j]] = row[j];
+            }
+            rows.push(obj);
+          }
+        }
+        return rows;
+      }
+
+      function renderColumns(row) {
+        columnsDropzone.innerHTML = "";
+        for (const prop in row) {
+          if (row.hasOwnProperty(prop)) {
+            const draggable = createDraggable(prop);
+            columnsDropzone.appendChild(draggable);
+          }
+        }
+      }
+
+      function createDraggable(text) {
+        const draggable = document.createElement("div");
+        draggable.className = "draggable";
+        draggable.draggable = true;
+        draggable.textContent = text;
+        draggable.addEventListener("dragstart", handleDragStart, false);
+        return draggable;
+      }
+
+      function handleDragStart(event) {
+        event.dataTransfer.setData("text", event.target.textContent);
+      }
+
+      rowsDropzone.addEventListener("dragover", handleDragOver, false);
+      rowsDropzone.addEventListener("drop", handleRowDrop, false);
+
+      function handleRowDrop(event) {
+        event.stopPropagation();
+        event.preventDefault();
+
+        const draggedText = event.dataTransfer.getData("text");
+        const draggable = createDraggable(draggedText);
+        rowsDropzone.appendChild(draggable);
+      }
+
+      rowsDropzone.addEventListener("dragover", handleDragOver, false);
+      rowsDropzone.addEventListener("drop", handleRowDrop, false);
+
+      function handleRowDrop(event) {
+        event.stopPropagation();
+        event.preventDefault();
+
+        const draggedText = event.dataTransfer.getData("text");
+        const draggable = createDraggable(draggedText);
+        rowsDropzone.appendChild(draggable);
+      }
+
+      function generatePivotTable() {
+        const rowHeaders = Array.from(rowsDropzone.children).map((row) => row.textContent);
+        const columnHeaders = Array.from(columnsDropzone.children).map((column) => column.textContent);
+
+        let tableHTML = "<tr>";
+        tableHTML += "<th></th>";
+        columnHeaders.forEach((column) => {
+          tableHTML += `<th>${column}</th>`;
+        });
+        tableHTML += "</tr>";
+
+        rowHeaders.forEach((row) => {
+          tableHTML += "<tr>";
+          tableHTML += `<td>${row}</td>`;
+          columnHeaders.forEach((column) => {
+            const matchingItem = data.find((item) => item[column] === row);
+            const value = matchingItem ? matchingItem[column] : "";
+            tableHTML += `<td>${value}</td>`;
+          });
+          tableHTML += "</tr>";
+        });
+
+        pivotTable.innerHTML = tableHTML;
+      }
+
+      rowsDropzone.addEventListener("drop", generatePivotTable, false);
+      columnsDropzone.addEventListener("drop", generatePivotTable, false);
+    </script>
+  </body>
+</html>
