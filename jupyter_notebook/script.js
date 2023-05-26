@@ -37,17 +37,34 @@ function createCell() {
 
   const cellToolbar = document.createElement("div");
   cellToolbar.className = "cell-toolbar";
+
+  // Options select
+  const optionsSelect = document.createElement("select");
+  const option1 = document.createElement("option");
+  option1.value = "ES6";
+  option1.textContent = "ES6";
+  const option2 = document.createElement("option");
+  option2.value = "Typescript";
+  option2.textContent = "Typescript";
+  optionsSelect.appendChild(option1);
+  optionsSelect.appendChild(option2);
+  optionsSelect.addEventListener("change", function () {
+    saveCellState(cell.id, cellInput.value, optionsSelect.value);
+  });
+
   const deleteButton = document.createElement("button");
   deleteButton.textContent = "Delete";
   deleteButton.addEventListener("click", function () {
     deleteCell(cell.id);
   });
+
   const executeButton = document.createElement("button");
   executeButton.textContent = "Execute";
   executeButton.addEventListener("click", function () {
-    executeCell(cell.id);
+    executeCell(cell.id, optionsSelect.value);
   });
 
+  cellToolbar.appendChild(optionsSelect);
   cellToolbar.appendChild(deleteButton);
   cellToolbar.appendChild(executeButton);
 
@@ -55,7 +72,7 @@ function createCell() {
   cellInput.className = "cell-input";
   cellInput.placeholder = "Enter JavaScript code...";
   cellInput.addEventListener("input", function () {
-    saveCellState(cell.id, cellInput.value);
+    saveCellState(cell.id, cellInput.value, optionsSelect.value);
   });
 
   const cellOutput = document.createElement("div");
@@ -70,7 +87,7 @@ function createCell() {
   cellCount++;
 
   // Save cell state to IndexedDB
-  saveCellState(cell.id, cellInput.value);
+  saveCellState(cell.id, cellInput.value, optionsSelect.value);
 }
 
 function deleteCell(cellId) {
@@ -83,7 +100,7 @@ function deleteCell(cellId) {
   store.delete(cellId);
 }
 
-function executeCell(cellId) {
+function executeCell(cellId, language) {
   const cell = document.getElementById(cellId);
   const cellInput = cell.querySelector(".cell-input");
   const cellOutput = cell.querySelector(".cell-output");
@@ -100,7 +117,19 @@ function executeCell(cellId) {
   };
 
   try {
-    const output = eval(code);
+    let transpiledCode = code;
+
+    if (language === "Typescript") {
+      // Transpile from Typescript to JavaScript using TypeScript library
+      const transpileOptions = { target: ts.ScriptTarget.ES2017, module: ts.ModuleKind.CommonJS };
+      transpiledCode = ts.transpileModule(code, { compilerOptions: transpileOptions }).outputText;
+    } else if (language === "ES6") {
+      // Transpile from Typescript to JavaScript using Babel library
+      const transpileOptions = { presets: ["es2015"] };
+      transpiledCode = Babel.transform(code, transpileOptions).code;
+    }
+
+    const output = eval(transpiledCode);
     cellOutput.textContent = consoleOutput + output;
   } catch (error) {
     console.error(error);
@@ -111,7 +140,7 @@ function executeCell(cellId) {
   console.log = originalConsoleLog;
 
   // Update cell state in IndexedDB
-  saveCellState(cellId, cellInput.value);
+  saveCellState(cellId, cellInput.value, language);
 }
 
 function executeAllCells() {
@@ -122,10 +151,10 @@ function executeAllCells() {
   });
 }
 
-function saveCellState(cellId, content) {
+function saveCellState(cellId, content, language) {
   const transaction = db.transaction("cells", "readwrite");
   const store = transaction.objectStore("cells");
-  const cellData = { id: cellId, content: content };
+  const cellData = { id: cellId, content: content, language: language };
   store.put(cellData);
 }
 
@@ -154,17 +183,35 @@ function createCellFromDB(cellData) {
 
   const cellToolbar = document.createElement("div");
   cellToolbar.className = "cell-toolbar";
+
+  // Options select
+  const optionsSelect = document.createElement("select");
+  const option1 = document.createElement("option");
+  option1.value = "ES6";
+  option1.textContent = "ES6";
+  const option2 = document.createElement("option");
+  option2.value = "Typescript";
+  option2.textContent = "Typescript";
+  optionsSelect.appendChild(option1);
+  optionsSelect.appendChild(option2);
+  optionsSelect.value = cellData.language; // Set saved option value
+  optionsSelect.addEventListener("change", function () {
+    saveCellState(cell.id, cellInput.value, optionsSelect.value);
+  });
+
   const deleteButton = document.createElement("button");
   deleteButton.textContent = "Delete";
   deleteButton.addEventListener("click", function () {
     deleteCell(cell.id);
   });
+
   const executeButton = document.createElement("button");
   executeButton.textContent = "Execute";
   executeButton.addEventListener("click", function () {
-    executeCell(cell.id);
+    executeCell(cell.id, optionsSelect.value);
   });
 
+  cellToolbar.appendChild(optionsSelect);
   cellToolbar.appendChild(deleteButton);
   cellToolbar.appendChild(executeButton);
 
@@ -172,8 +219,9 @@ function createCellFromDB(cellData) {
   cellInput.className = "cell-input";
   cellInput.placeholder = "Enter JavaScript code...";
   cellInput.addEventListener("input", function () {
-    saveCellState(cell.id, cellInput.value);
+    saveCellState(cell.id, cellInput.value, optionsSelect.value);
   });
+  cellInput.value = cellData.content; // Set saved cell content
 
   const cellOutput = document.createElement("div");
   cellOutput.className = "cell-output";
@@ -184,6 +232,6 @@ function createCellFromDB(cellData) {
 
   cellsSection.appendChild(cell);
 
-  // Set cell content from IndexedDB
-  cellInput.value = cellData.content;
+  // Save cell state to IndexedDB
+  saveCellState(cell.id, cellInput.value, optionsSelect.value);
 }
