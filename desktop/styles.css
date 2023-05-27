@@ -1,66 +1,100 @@
 body {
+  background-color: #ccc;
   margin: 0;
   padding: 0;
-  background-color: #d3d3d3;
-  font-family: Arial, sans-serif;
 }
 
 #taskbar {
-  background-color: #000;
-  color: #fff;
+  background-color: #1a1a1a;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
   height: 40px;
-  padding: 5px;
+  z-index: 9999;
 }
 
 #start-button {
-  width: 60px;
-  height: 30px;
-  background-color: #00a2e8;
-  color: #fff;
-  padding: 5px;
+  background-color: #00ff00;
+  width: 40px;
+  height: 100%;
+  float: left;
+}
+
+.taskbar-button {
+  display: inline-block;
+  background-color: #333;
+  color: white;
+  padding: 5px 10px;
+  margin: 5px;
   cursor: pointer;
 }
 
 .window {
+  background-color: #f5f5f5;
+  border: 1px solid #aaa;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
   position: absolute;
   top: 100px;
   left: 100px;
-  width: 400px;
-  height: 300px;
-  background-color: #fff;
-  border: 1px solid #000;
-  overflow: hidden;
+  width: 300px;
+  height: 200px;
   z-index: 1;
+  resize: both;
+  overflow: auto;
 }
 
-.title-bar {
-  background-color: #00a2e8;
+.window .title-bar {
+  background-color: #1a1a1a;
   color: #fff;
-  height: 25px;
   padding: 5px;
   cursor: move;
 }
 
-.title {
-  float: left;
-}
-
-.buttons {
+.window .title-bar .buttons {
   float: right;
 }
 
-.buttons div {
-  display: inline-block;
+.window .title-bar .buttons button {
+  background-color: #00ff00;
+  border: none;
+  border-radius: 50%;
   width: 15px;
   height: 15px;
   margin-left: 5px;
-  background-color: #ccc;
   cursor: pointer;
 }
 
-.content {
-  height: 100%;
-  padding: 5px;
+.window .title-bar .buttons button.minimize {
+  background-color: #ffff00;
 }
 
-/* Add more CSS styles if needed */
+.window .title-bar .buttons button.close {
+  background-color: #ff0000;
+}
+
+#desktop-icons {
+  position: fixed;
+  top: 80px;
+  left: 10px;
+  z-index: 0;
+}
+
+.desktop-icon {
+  display: inline-block;
+  text-align: center;
+  width: 80px;
+  margin: 10px;
+}
+
+.desktop-icon img {
+  width: 64px;
+  height: 64px;
+}
+
+.desktop-icon span {
+  display: block;
+  margin-top: 5px;
+  font-size: 12px;
+  color: #000;
+}
