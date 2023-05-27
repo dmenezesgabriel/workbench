@@ -37,9 +37,9 @@ const cssInput = CodeMirror(document.getElementById("css-input"), {
   theme: "dracula", // Set Dracula theme
 });
 const jsInput = CodeMirror(document.getElementById("js-input"), {
-  mode: "javascript",
+  mode: "text/typescript",
   lineNumbers: true,
-  placeholder: "Enter JavaScript code",
+  placeholder: "Enter TypeScript code",
   theme: "dracula", // Set Dracula theme
 });
 const previewFrame = document.getElementById("preview-frame");
@@ -48,7 +48,9 @@ const previewFrame = document.getElementById("preview-frame");
 function updatePreview() {
   const htmlCode = htmlInput.getValue();
   const cssCode = cssInput.getValue();
-  const jsCode = jsInput.getValue();
+  const tsCode = jsInput.getValue();
+
+  const transpiledCode = ts.transpileModule(tsCode, {}).outputText;
 
   const previewContent = `
     <html>
@@ -59,7 +61,7 @@ function updatePreview() {
         ${htmlCode}
         <script>
           try {
-            ${jsCode}
+            ${transpiledCode}
           } catch (error) {
             console.error(error);
           }
@@ -73,7 +75,11 @@ function updatePreview() {
   previewFrame.contentDocument.close();
 
   // Save code to IndexedDB
-  saveCodeToDB(htmlCode, cssCode, jsCode);
+  if (db) {
+    saveCodeToDB(htmlCode, cssCode, tsCode);
+  } else {
+    console.log("IndexedDB is not available.");
+  }
 }
 
 // Event listeners
@@ -86,47 +92,55 @@ updatePreview();
 
 // Load code from IndexedDB
 function loadCodeFromDB() {
-  const transaction = db.transaction(["codeStore"], "readonly");
-  const objectStore = transaction.objectStore("codeStore");
+  if (db) {
+    const transaction = db.transaction(["codeStore"], "readonly");
+    const objectStore = transaction.objectStore("codeStore");
 
-  const request = objectStore.get(1);
+    const request = objectStore.get(1);
 
-  request.onerror = function () {
-    console.log("Error loading code from IndexedDB");
-  };
+    request.onerror = function () {
+      console.log("Error loading code from IndexedDB");
+    };
 
-  request.onsuccess = function () {
-    const result = request.result;
+    request.onsuccess = function () {
+      const result = request.result;
 
-    if (result) {
-      htmlInput.setValue(result.html);
-      cssInput.setValue(result.css);
-      jsInput.setValue(result.js);
-    }
-  };
+      if (result) {
+        htmlInput.setValue(result.html);
+        cssInput.setValue(result.css);
+        jsInput.setValue(result.js);
+      }
+    };
+  } else {
+    console.log("IndexedDB is not available.");
+  }
 }
 
 // Save code to IndexedDB
-function saveCodeToDB(htmlCode, cssCode, jsCode) {
-  const codeData = {
-    id: 1,
-    html: htmlCode,
-    css: cssCode,
-    js: jsCode,
-  };
+function saveCodeToDB(htmlCode, cssCode, tsCode) {
+  if (db) {
+    const codeData = {
+      id: 1,
+      html: htmlCode,
+      css: cssCode,
+      js: tsCode,
+    };
 
-  const transaction = db.transaction(["codeStore"], "readwrite");
-  const objectStore = transaction.objectStore("codeStore");
+    const transaction = db.transaction(["codeStore"], "readwrite");
+    const objectStore = transaction.objectStore("codeStore");
 
-  const request = objectStore.put(codeData);
+    const request = objectStore.put(codeData);
 
-  request.onerror = function () {
-    console.log("Error saving code to IndexedDB");
-  };
+    request.onerror = function () {
+      console.log("Error saving code to IndexedDB");
+    };
 
-  request.onsuccess = function () {
-    console.log("Code saved to IndexedDB");
-  };
+    request.onsuccess = function () {
+      console.log("Code saved to IndexedDB");
+    };
+  } else {
+    console.log("IndexedDB is not available.");
+  }
 }
 
 // Intercept console messages from the iframe and display them on the UI
