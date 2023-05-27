@@ -1,13 +1,51 @@
 var taskbar = document.getElementById("taskbar");
 var taskbarButtons = [];
 
-var icons = document.getElementsByClassName("desktop-icon");
-for (var i = 0; i < icons.length; i++) {
-  icons[i].addEventListener("click", createWindow);
+class DesktopIcon extends HTMLElement {
+  constructor() {
+    super();
+
+    // Create shadow DOM
+    this.attachShadow({ mode: "open" });
+
+    // Get icon name and image from attributes
+    this.name = this.getAttribute("name");
+    this.image = this.getAttribute("image");
+  }
+
+  connectedCallback() {
+    this.render();
+    this.addEventListener("click", createWindow);
+  }
+
+  render() {
+    const iconTemplate = `
+      <style>
+        .desktop-icon {
+          cursor: pointer;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+        .desktop-icon img {
+          width: 80px;
+          height: 80px;
+        }
+      </style>
+      <div class="desktop-icon">
+        <img src="${this.image}" alt="${this.name}" />
+        <span>${this.name}</span>
+      </div>
+    `;
+
+    this.shadowRoot.innerHTML = iconTemplate;
+  }
 }
 
+customElements.define("desktop-icon", DesktopIcon);
+
 function createWindow() {
-  var iconName = this.id;
+  var iconName = this.name;
   var windowId = "window-" + Date.now();
 
   var window = document.createElement("div");
