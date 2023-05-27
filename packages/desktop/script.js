@@ -11,6 +11,7 @@ class DesktopIcon extends HTMLElement {
     // Get icon name and image from attributes
     this.name = this.getAttribute("name");
     this.image = this.getAttribute("image");
+    this.path = this.getAttribute("path");
   }
 
   connectedCallback() {
@@ -26,6 +27,7 @@ class DesktopIcon extends HTMLElement {
           display: flex;
           flex-direction: column;
           align-items: center;
+          color: white;
         }
         .desktop-icon img {
           width: 80px;
@@ -68,7 +70,12 @@ function createWindow() {
 
   var content = document.createElement("div");
   content.className = "content";
-  // Window content goes here...
+  var iframe = document.createElement("iframe");
+  iframe.className = "content-iframe";
+  iframe.src = this.path;
+
+  content.appendChild(iframe);
+
   window.appendChild(content);
 
   document.body.appendChild(window);

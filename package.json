@@ -1,0 +1,16 @@
+{
+  "name": "workbench",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "workspaces": [
+    "packages/desktop",
+    "packages/jupyter-notebook",
+    "packages/ide"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
