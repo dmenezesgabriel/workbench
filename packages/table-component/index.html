@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Table Web Component</title>
+    <script>
+      // Define the custom element
+      class TableComponent extends HTMLElement {
+        constructor() {
+          super();
+          this.attachShadow({ mode: "open" });
+          this.data = [];
+          this.rowsPerPage = 5;
+          this.currentPage = 1;
+          this.filters = {};
+          this.filterThrottleTime = 300;
+          this.filterTimeoutId = null;
+          this.paginationEnabled = true;
+          this.rowsPerPageEnabled = true;
+          this.filtersEnabled = true;
+        }
+
+        static get observedAttributes() {
+          return ["data", "rows-per-page", "filter-throttle-time", "pagination-enabled", "rows-per-page-enabled", "filters-enabled"];
+        }
+
+        attributeChangedCallback(attrName, oldValue, newValue) {
+          if (attrName === "data" && oldValue !== newValue) {
+            this.data = JSON.parse(newValue);
+            this.renderTable();
+          } else if (attrName === "rows-per-page" && oldValue !== newValue) {
+            this.rowsPerPage = parseInt(newValue);
+            this.renderTable();
+          } else if (attrName === "filter-throttle-time" && oldValue !== newValue) {
+            this.filterThrottleTime = parseInt(newValue);
+            this.renderTable();
+          } else if (attrName === "pagination-enabled" && oldValue !== newValue) {
+            this.paginationEnabled = newValue === "true";
+            this.renderTable();
+          } else if (attrName === "rows-per-page-enabled" && oldValue !== newValue) {
+            this.rowsPerPageEnabled = newValue === "true";
+            this.renderTable();
+          } else if (attrName === "filters-enabled" && oldValue !== newValue) {
+            this.filtersEnabled = newValue === "true";
+            this.renderTable();
+          }
+        }
+
+        connectedCallback() {
+          this.renderTable();
+        }
+
+        renderTable() {
+          const data = this.data;
+
+          if (Array.isArray(data)) {
+            const tableStyles = `
+            <style>
+              table {
+                border-collapse: collapse;
+              }
+            
+              th, td {
+                border: 1px solid black;
+                padding: 8px;
+              }
+              
+              .pagination {
+                margin-top: 16px;
+              }
+              
+              .pagination button {
+                margin-right: 4px;
+              }
+              
+              .rows-per-page {
+                margin-top: 8px;
+              }
+              
+              .filter-input {
+                margin-top: 8px;
+              }
+            </style>
+          `;
+
+            const table = document.createElement("table");
+            const headerRow = document.createElement("tr");
+            const firstItem = data[0];
+
+            // Generate table headers
+            for (let key in firstItem) {
+              const headerCell = document.createElement("th");
+              headerCell.textContent = key;
+
+              if (this.filtersEnabled) {
+                const filterInput = document.createElement("input");
+                filterInput.classList.add("filter-input");
+                filterInput.placeholder = "Filter...";
+                filterInput.value = this.filters[key] || ""; // Preserve filter input value
+                filterInput.addEventListener("input", (event) => {
+                  clearTimeout(this.filterTimeoutId); // Clear previous timeout
+
+                  const filterValue = event.target.value;
+                  this.filterTimeoutId = setTimeout(() => {
+                    this.filters[key] = filterValue.toLowerCase().trim();
+                    this.renderTable();
+                  }, this.filterThrottleTime);
+                });
+
+                headerCell.appendChild(filterInput);
+              }
+
+              headerRow.appendChild(headerCell);
+            }
+            table.appendChild(headerRow);
+
+            // Filter data
+            const filteredData = data.filter((item) => {
+              for (let key in this.filters) {
+                const filterValue = this.filters[key];
+                if (filterValue && !item[key].toString().toLowerCase().includes(filterValue)) {
+                  return false;
+                }
+              }
+              return true;
+            });
+
+            // Generate table rows
+            const startIndex = (this.currentPage - 1) * this.rowsPerPage;
+            const endIndex = Math.min(startIndex + this.rowsPerPage, filteredData.length);
+
+            for (let i = startIndex; i < endIndex; i++) {
+              const item = filteredData[i];
+              const row = document.createElement("tr");
+              for (let key in item) {
+                const cell = document.createElement("td");
+                cell.textContent = item[key];
+                row.appendChild(cell);
+              }
+              table.appendChild(row);
+            }
+
+            // Clear the shadow DOM and append the table, styles, pagination, rows per page select, and filter inputs
+            this.shadowRoot.innerHTML = "";
+            this.shadowRoot.innerHTML = tableStyles;
+            this.shadowRoot.appendChild(table);
+
+            if (this.paginationEnabled) {
+              // Add pagination
+              const paginationDiv = document.createElement("div");
+              paginationDiv.classList.add("pagination");
+
+              const totalPages = Math.ceil(filteredData.length / this.rowsPerPage);
+              if (totalPages > 1) {
+                const prevButton = document.createElement("button");
+                prevButton.textContent = "Prev";
+                prevButton.disabled = this.currentPage === 1;
+                prevButton.addEventListener("click", () => {
+                  if (this.currentPage > 1) {
+                    this.currentPage--;
+                    this.renderTable();
+                  }
+                });
+                paginationDiv.appendChild(prevButton);
+
+                for (let i = 1; i <= totalPages; i++) {
+                  const pageButton = document.createElement("button");
+                  pageButton.textContent = i;
+                  pageButton.classList.toggle("active", i === this.currentPage);
+                  pageButton.addEventListener("click", () => {
+                    if (i !== this.currentPage) {
+                      this.currentPage = i;
+                      this.renderTable();
+                    }
+                  });
+                  paginationDiv.appendChild(pageButton);
+                }
+
+                const nextButton = document.createElement("button");
+                nextButton.textContent = "Next";
+                nextButton.disabled = this.currentPage === totalPages;
+                nextButton.addEventListener("click", () => {
+                  if (this.currentPage < totalPages) {
+                    this.currentPage++;
+                    this.renderTable();
+                  }
+                });
+                paginationDiv.appendChild(nextButton);
+
+                this.shadowRoot.appendChild(paginationDiv);
+              }
+            }
+
+            if (this.rowsPerPageEnabled) {
+              // Add rows per page select
+              const rowsPerPageDiv = document.createElement("div");
+              rowsPerPageDiv.classList.add("rows-per-page");
+
+              const selectLabel = document.createElement("label");
+              selectLabel.textContent = "Rows per Page: ";
+              const select = document.createElement("select");
+              select.value = this.rowsPerPage;
+              select.addEventListener("change", (event) => {
+                const selectedRowsPerPage = parseInt(event.target.value);
+                if (selectedRowsPerPage !== this.rowsPerPage) {
+                  this.rowsPerPage = selectedRowsPerPage;
+                  this.currentPage = 1;
+                  this.setAttribute("rows-per-page", selectedRowsPerPage);
+                }
+              });
+
+              const options = [5, 10, 20, 50];
+              options.forEach((option) => {
+                const optionElement = document.createElement("option");
+                optionElement.value = option;
+                optionElement.textContent = option;
+                if (option === this.rowsPerPage) {
+                  optionElement.selected = true;
+                }
+                select.appendChild(optionElement);
+              });
+
+              rowsPerPageDiv.appendChild(selectLabel);
+              rowsPerPageDiv.appendChild(select);
+
+              this.shadowRoot.appendChild(rowsPerPageDiv);
+            }
+          } else {
+            this.shadowRoot.innerHTML = "Invalid data format!";
+          }
+        }
+      }
+
+      // Define the custom element tag
+      customElements.define("table-component", TableComponent);
+    </script>
+  </head>
+  <body>
+    <table-component
+      data='[
+    {"Name": "John", "Age": 30, "Country": "USA"},
+    {"Name": "Emily", "Age": 25, "Country": "Canada"},
+    {"Name": "Michael", "Age": 35, "Country": "UK"},
+    {"Name": "Sophia", "Age": 28, "Country": "Germany"},
+    {"Name": "Liam", "Age": 32, "Country": "Australia"},
+    {"Name": "Olivia", "Age": 27, "Country": "Japan"},
+    {"Name": "Noah", "Age": 31, "Country": "Brazil"},
+    {"Name": "Emma", "Age": 29, "Country": "France"},
+    {"Name": "Alexander", "Age": 33, "Country": "Spain"},
+    {"Name": "Ava", "Age": 26, "Country": "Italy"}
+  ]'
+      rows-per-page="5"
+      filter-throttle-time="300"
+      pagination-enabled="true"
+      rows-per-page-enabled="true"
+      filters-enabled="true"
+    ></table-component>
+  </body>
+</html>
