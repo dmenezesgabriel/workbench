@@ -108,6 +108,15 @@
                 headerCell.appendChild(filterInput);
               }
 
+              const sortButton = document.createElement("button");
+              sortButton.textContent = "Sort";
+              sortButton.addEventListener("click", () => {
+                this.sortData(key);
+                this.renderTable();
+              });
+
+              headerCell.appendChild(sortButton);
+
               headerRow.appendChild(headerCell);
             }
             table.appendChild(headerRow);
@@ -222,6 +231,29 @@
               rowsPerPageDiv.appendChild(select);
 
               this.shadowRoot.appendChild(rowsPerPageDiv);
+            }
+          }
+        }
+        sortData(key) {
+          if (this.data.length > 1) {
+            const dataType = typeof this.data[0][key];
+            const ascending = this.filters[key] !== "asc";
+
+            if (dataType === "number") {
+              this.data.sort((a, b) => (ascending ? a[key] - b[key] : b[key] - a[key]));
+            } else {
+              this.data.sort((a, b) => {
+                const valueA = a[key].toString().toLowerCase();
+                const valueB = b[key].toString().toLowerCase();
+
+                if (valueA < valueB) {
+                  return ascending ? -1 : 1;
+                }
+                if (valueA > valueB) {
+                  return ascending ? 1 : -1;
+                }
+                return 0;
+              });
             }
           }
         }
