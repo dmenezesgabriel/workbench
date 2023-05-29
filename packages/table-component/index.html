@@ -58,24 +58,19 @@
               table {
                 border-collapse: collapse;
               }
-            
               th, td {
                 border: 1px solid black;
                 padding: 8px;
               }
-              
               .pagination {
                 margin-top: 16px;
               }
-              
               .pagination button {
                 margin-right: 4px;
               }
-              
               .rows-per-page {
                 margin-top: 8px;
               }
-              
               .filter-input {
                 margin-top: 8px;
               }
@@ -89,17 +84,21 @@
             // Generate table headers
             for (let key in firstItem) {
               const headerCell = document.createElement("th");
-              headerCell.textContent = key;
+              const headerCellText = document.createElement("div");
+
+              headerCellText.classList.add("header-cell-text");
+              headerCell.appendChild(headerCellText);
+
+              headerCellText.textContent = key;
 
               if (this.filtersEnabled) {
-                const filterInput = document.createElement("input");
+                const filterInput = document.createElement("filter-input-component");
                 filterInput.classList.add("filter-input");
-                filterInput.placeholder = "Filter...";
-                filterInput.value = this.filters[key] || ""; // Preserve filter input value
-                filterInput.addEventListener("input", (event) => {
+                filterInput.setAttribute("value", this.filters[key] || ""); // Preserve filter input value
+                filterInput.addEventListener("filterChange", (event) => {
                   clearTimeout(this.filterTimeoutId); // Clear previous timeout
 
-                  const filterValue = event.target.value;
+                  const filterValue = event.detail;
                   this.filterTimeoutId = setTimeout(() => {
                     this.filters[key] = filterValue.toLowerCase().trim();
                     this.renderTable();
@@ -224,35 +223,70 @@
 
               this.shadowRoot.appendChild(rowsPerPageDiv);
             }
-          } else {
-            this.shadowRoot.innerHTML = "Invalid data format!";
           }
         }
       }
 
-      // Define the custom element tag
+      // Define the filter input custom element
+      class FilterInputComponent extends HTMLElement {
+        constructor() {
+          super();
+          this.attachShadow({ mode: "open" });
+          this.value = "";
+        }
+
+        connectedCallback() {
+          this.render();
+        }
+
+        render() {
+          const input = document.createElement("input");
+          input.type = "text";
+          input.value = this.value;
+          input.addEventListener("input", (event) => {
+            this.value = event.target.value;
+            this.dispatchEvent(new CustomEvent("filterChange", { detail: this.value }));
+          });
+
+          this.shadowRoot.innerHTML = "";
+          this.shadowRoot.appendChild(input);
+        }
+
+        static get observedAttributes() {
+          return ["value"];
+        }
+
+        attributeChangedCallback(attrName, oldValue, newValue) {
+          if (attrName === "value" && oldValue !== newValue) {
+            this.value = newValue;
+            this.render();
+          }
+        }
+      }
+
+      // Define the custom elements
       customElements.define("table-component", TableComponent);
+      customElements.define("filter-input-component", FilterInputComponent);
     </script>
   </head>
   <body>
-    <table-component
-      data='[
-    {"Name": "John", "Age": 30, "Country": "USA"},
-    {"Name": "Emily", "Age": 25, "Country": "Canada"},
-    {"Name": "Michael", "Age": 35, "Country": "UK"},
-    {"Name": "Sophia", "Age": 28, "Country": "Germany"},
-    {"Name": "Liam", "Age": 32, "Country": "Australia"},
-    {"Name": "Olivia", "Age": 27, "Country": "Japan"},
-    {"Name": "Noah", "Age": 31, "Country": "Brazil"},
-    {"Name": "Emma", "Age": 29, "Country": "France"},
-    {"Name": "Alexander", "Age": 33, "Country": "Spain"},
-    {"Name": "Ava", "Age": 26, "Country": "Italy"}
-  ]'
-      rows-per-page="5"
-      filter-throttle-time="300"
-      pagination-enabled="true"
-      rows-per-page-enabled="true"
-      filters-enabled="true"
-    ></table-component>
+    <table-component></table-component>
+
+    <script>
+      // Example data
+      const data = [
+        { Name: "John Doe", Age: 30, City: "New York" },
+        { Name: "Jane Smith", Age: 25, City: "Los Angeles" },
+        { Name: "Bob Johnson", Age: 40, City: "Chicago" },
+        { Name: "Emily Davis", Age: 35, City: "San Francisco" },
+        { Name: "Michael Brown", Age: 32, City: "Seattle" },
+        { Name: "Olivia Wilson", Age: 28, City: "Miami" },
+        { Name: "David Lee", Age: 37, City: "Dallas" },
+        { Name: "Sophia Thompson", Age: 29, City: "Denver" },
+      ];
+      // Set the data attribute of the table component
+      const tableComponent = document.querySelector("table-component");
+      tableComponent.setAttribute("data", JSON.stringify(data));
+    </script>
   </body>
 </html>
