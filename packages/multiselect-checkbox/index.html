@@ -24,79 +24,164 @@
     </style>
   </head>
   <body>
-    <div class="dropdown">
-      <button onclick="toggleDropdown()">Open Dropdown</button>
-      <div id="dropdownContent" class="dropdown-content">
-        <input type="search" placeholder="Search..." oninput="filterCheckboxes()" />
-        <div id="checkboxes"></div>
-        <button onclick="applyFilters()">Apply</button>
-      </div>
-    </div>
+    <my-dropdown
+      objects='[{"id": 1, "name": "Object 1", "category": "Category A"}, {"id": 2, "name": "Object 2", "category": "Category B"}, {"id": 3, "name": "Object 3", "category": "Category A"}, {"id": 4, "name": "Object 4", "category": "Category B"}]'
+    ></my-dropdown>
 
     <script>
-      // Sample array of objects
-      const objects = [
-        { id: 1, name: "Object 1", category: "Category A" },
-        { id: 2, name: "Object 2", category: "Category B" },
-        { id: 3, name: "Object 3", category: "Category A" },
-        { id: 4, name: "Object 4", category: "Category B" },
-      ];
+      class MyDropdown extends HTMLElement {
+        constructor() {
+          super();
 
-      // Variables to store the selected checkboxes and filtered objects
-      let selectedCheckboxes = {};
-      let filteredObjects = objects.slice();
+          // Attach a shadow root to the element
+          this.attachShadow({ mode: "open" });
 
-      // Function to toggle the dropdown visibility
-      function toggleDropdown() {
-        const dropdownContent = document.getElementById("dropdownContent");
-        dropdownContent.style.display = dropdownContent.style.display === "block" ? "none" : "block";
+          // Set up the initial state
+          this.objects = [];
+          this.selectedCheckboxes = {};
+          this.filteredObjects = [];
 
-        // Populate the checkboxes when the dropdown is opened
-        if (dropdownContent.style.display === "block") {
-          filterCheckboxes();
+          // Create the dropdown structure
+          const template = document.createElement("template");
+          template.innerHTML = `
+            <style>
+              .dropdown {
+                position: relative;
+                display: inline-block;
+              }
+
+              .dropdown-content {
+                display: none;
+                position: absolute;
+                background-color: #f9f9f9;
+                min-width: 200px;
+                box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+                padding: 12px;
+                z-index: 1;
+              }
+
+              .dropdown input[type="search"] {
+                margin-bottom: 8px;
+                padding: 4px;
+              }
+            </style>
+            <div class="dropdown">
+              <button id="dropdownButton">Open Dropdown</button>
+              <div id="dropdownContent" class="dropdown-content">
+                <input type="search" placeholder="Search..." />
+                <div id="checkboxes"></div>
+                <button id="applyButton">Apply</button>
+              </div>
+            </div>
+          `;
+
+          // Append the template content to the shadow root
+          this.shadowRoot.appendChild(template.content.cloneNode(true));
+
+          // Get references to the elements
+          this.dropdownButton = this.shadowRoot.querySelector("#dropdownButton");
+          this.dropdownContent = this.shadowRoot.querySelector("#dropdownContent");
+          this.searchInput = this.shadowRoot.querySelector('input[type="search"]');
+          this.checkboxesDiv = this.shadowRoot.querySelector("#checkboxes");
+          this.applyButton = this.shadowRoot.querySelector("#applyButton");
+        }
+
+        static get observedAttributes() {
+          return ["objects"];
+        }
+
+        connectedCallback() {
+          // Add event listeners
+          this.dropdownButton.addEventListener("click", this.toggleDropdown.bind(this));
+          this.searchInput.addEventListener("input", this.filterCheckboxes.bind(this));
+          this.applyButton.addEventListener("click", this.applyFilters.bind(this));
+
+          // Retrieve the initial objects from the attribute
+          const objectsAttr = this.getAttribute("objects");
+          if (objectsAttr) {
+            this.objects = JSON.parse(objectsAttr);
+          }
+
+          // Initialize all checkboxes as checked
+          this.objects.forEach((obj) => {
+            this.selectedCheckboxes[obj.name] = true;
+          });
+
+          // Render the initial checkboxes
+          this.renderCheckboxes();
+        }
+
+        attributeChangedCallback(name, oldValue, newValue) {
+          if (name === "objects" && newValue !== oldValue) {
+            this.objects = JSON.parse(newValue);
+            this.renderCheckboxes();
+          }
+        }
+
+        toggleDropdown() {
+          this.dropdownContent.style.display = this.dropdownContent.style.display === "block" ? "none" : "block";
+
+          if (this.dropdownContent.style.display === "block") {
+            this.filterCheckboxes();
+          }
+        }
+
+        filterCheckboxes() {
+          const searchTerm = this.searchInput.value.toLowerCase();
+
+          const filteredCheckboxes = this.objects.filter((obj) => obj.name.toLowerCase().includes(searchTerm));
+
+          this.checkboxesDiv.innerHTML = "";
+          filteredCheckboxes.forEach((obj) => {
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.name = "checkbox";
+            checkbox.value = obj.name;
+            checkbox.checked = this.selectedCheckboxes[obj.name] || false;
+            checkbox.addEventListener("change", () => {
+              this.selectedCheckboxes[obj.name] = checkbox.checked;
+            });
+
+            const label = document.createElement("label");
+            label.appendChild(document.createTextNode(obj.name));
+
+            this.checkboxesDiv.appendChild(checkbox);
+            this.checkboxesDiv.appendChild(label);
+            this.checkboxesDiv.appendChild(document.createElement("br"));
+          });
+        }
+
+        applyFilters() {
+          this.filteredObjects = this.objects.filter((obj) => this.selectedCheckboxes[obj.name]);
+
+          console.log(this.filteredObjects);
+          this.toggleDropdown();
+        }
+
+        renderCheckboxes() {
+          this.checkboxesDiv.innerHTML = "";
+          this.objects.forEach((obj) => {
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.name = "checkbox";
+            checkbox.value = obj.name;
+            checkbox.checked = this.selectedCheckboxes[obj.name] || false;
+            checkbox.addEventListener("change", () => {
+              this.selectedCheckboxes[obj.name] = checkbox.checked;
+            });
+
+            const label = document.createElement("label");
+            label.appendChild(document.createTextNode(obj.name));
+
+            this.checkboxesDiv.appendChild(checkbox);
+            this.checkboxesDiv.appendChild(label);
+            this.checkboxesDiv.appendChild(document.createElement("br"));
+          });
         }
       }
 
-      // Function to filter the checkboxes based on search input
-      function filterCheckboxes() {
-        const searchInput = document.querySelector('.dropdown-content input[type="search"]');
-        const checkboxesDiv = document.getElementById("checkboxes");
-        const searchTerm = searchInput.value.toLowerCase();
-
-        const filteredCheckboxes = objects.filter((obj) => obj.name.toLowerCase().includes(searchTerm));
-
-        checkboxesDiv.innerHTML = "";
-        filteredCheckboxes.forEach((obj) => {
-          const checkbox = document.createElement("input");
-          checkbox.type = "checkbox";
-          checkbox.name = "checkbox";
-          checkbox.value = obj.name;
-          checkbox.checked = selectedCheckboxes[obj.name] || false;
-          checkbox.addEventListener("change", function () {
-            selectedCheckboxes[obj.name] = this.checked;
-          });
-          checkboxesDiv.appendChild(checkbox);
-
-          const label = document.createElement("label");
-          label.appendChild(document.createTextNode(obj.name));
-          checkboxesDiv.appendChild(label);
-
-          checkboxesDiv.appendChild(document.createElement("br"));
-        });
-      }
-
-      // Function to apply the selected filters
-      function applyFilters() {
-        filteredObjects = objects.filter((obj) => selectedCheckboxes[obj.name]);
-
-        console.log(filteredObjects); // Filtered objects based on the checked checkboxes
-        toggleDropdown(); // Close the dropdown after applying filters
-      }
-
-      // Initialize all checkboxes as checked
-      objects.forEach((obj) => {
-        selectedCheckboxes[obj.name] = true;
-      });
+      // Define the custom element
+      customElements.define("my-dropdown", MyDropdown);
     </script>
   </body>
 </html>
