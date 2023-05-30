@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      .dropdown {
+        position: relative;
+        display: inline-block;
+      }
+
+      .dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: #f9f9f9;
+        min-width: 200px;
+        box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+        padding: 12px;
+        z-index: 1;
+      }
+
+      .dropdown input[type="search"] {
+        margin-bottom: 8px;
+        padding: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="dropdown">
+      <button onclick="toggleDropdown()">Open Dropdown</button>
+      <div id="dropdownContent" class="dropdown-content">
+        <input type="search" placeholder="Search..." oninput="filterCheckboxes()" />
+        <div id="checkboxes"></div>
+        <button onclick="applyFilters()">Apply</button>
+      </div>
+    </div>
+
+    <script>
+      // Sample array of objects
+      const objects = [
+        { id: 1, name: "Object 1", category: "Category A" },
+        { id: 2, name: "Object 2", category: "Category B" },
+        { id: 3, name: "Object 3", category: "Category A" },
+        { id: 4, name: "Object 4", category: "Category B" },
+      ];
+
+      // Variables to store the selected checkboxes and filtered objects
+      let selectedCheckboxes = {};
+      let filteredObjects = objects.slice();
+
+      // Function to toggle the dropdown visibility
+      function toggleDropdown() {
+        const dropdownContent = document.getElementById("dropdownContent");
+        dropdownContent.style.display = dropdownContent.style.display === "block" ? "none" : "block";
+
+        // Populate the checkboxes when the dropdown is opened
+        if (dropdownContent.style.display === "block") {
+          filterCheckboxes();
+        }
+      }
+
+      // Function to filter the checkboxes based on search input
+      function filterCheckboxes() {
+        const searchInput = document.querySelector('.dropdown-content input[type="search"]');
+        const checkboxesDiv = document.getElementById("checkboxes");
+        const searchTerm = searchInput.value.toLowerCase();
+
+        const filteredCheckboxes = objects.filter((obj) => obj.name.toLowerCase().includes(searchTerm));
+
+        checkboxesDiv.innerHTML = "";
+        filteredCheckboxes.forEach((obj) => {
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.name = "checkbox";
+          checkbox.value = obj.name;
+          checkbox.checked = selectedCheckboxes[obj.name] || false;
+          checkbox.addEventListener("change", function () {
+            selectedCheckboxes[obj.name] = this.checked;
+          });
+          checkboxesDiv.appendChild(checkbox);
+
+          const label = document.createElement("label");
+          label.appendChild(document.createTextNode(obj.name));
+          checkboxesDiv.appendChild(label);
+
+          checkboxesDiv.appendChild(document.createElement("br"));
+        });
+      }
+
+      // Function to apply the selected filters
+      function applyFilters() {
+        filteredObjects = objects.filter((obj) => selectedCheckboxes[obj.name]);
+
+        console.log(filteredObjects); // Filtered objects based on the checked checkboxes
+        toggleDropdown(); // Close the dropdown after applying filters
+      }
+
+      // Initialize all checkboxes as checked
+      objects.forEach((obj) => {
+        selectedCheckboxes[obj.name] = true;
+      });
+    </script>
+  </body>
+</html>
