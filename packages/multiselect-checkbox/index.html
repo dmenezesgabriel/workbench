@@ -26,6 +26,7 @@
   <body>
     <my-dropdown
       objects='[{"id": 1, "name": "Object 1", "category": "Category A"}, {"id": 2, "name": "Object 2", "category": "Category B"}, {"id": 3, "name": "Object 3", "category": "Category A"}, {"id": 4, "name": "Object 4", "category": "Category B"}]'
+      property-name="name"
     ></my-dropdown>
 
     <script>
@@ -40,6 +41,7 @@
           this.objects = [];
           this.selectedCheckboxes = {};
           this.filteredObjects = [];
+          this.propertyName = "";
 
           // Create the dropdown structure
           const template = document.createElement("template");
@@ -87,7 +89,7 @@
         }
 
         static get observedAttributes() {
-          return ["objects"];
+          return ["objects", "property-name"];
         }
 
         connectedCallback() {
@@ -96,15 +98,19 @@
           this.searchInput.addEventListener("input", this.filterCheckboxes.bind(this));
           this.applyButton.addEventListener("click", this.applyFilters.bind(this));
 
-          // Retrieve the initial objects from the attribute
+          // Retrieve the initial objects and property name from the attributes
           const objectsAttr = this.getAttribute("objects");
+          const propertyNameAttr = this.getAttribute("property-name");
           if (objectsAttr) {
             this.objects = JSON.parse(objectsAttr);
+          }
+          if (propertyNameAttr) {
+            this.propertyName = propertyNameAttr;
           }
 
           // Initialize all checkboxes as checked
           this.objects.forEach((obj) => {
-            this.selectedCheckboxes[obj.name] = true;
+            this.selectedCheckboxes[obj[this.propertyName]] = true;
           });
 
           // Render the initial checkboxes
@@ -114,6 +120,9 @@
         attributeChangedCallback(name, oldValue, newValue) {
           if (name === "objects" && newValue !== oldValue) {
             this.objects = JSON.parse(newValue);
+            this.renderCheckboxes();
+          } else if (name === "property-name" && newValue !== oldValue) {
+            this.propertyName = newValue;
             this.renderCheckboxes();
           }
         }
@@ -129,21 +138,21 @@
         filterCheckboxes() {
           const searchTerm = this.searchInput.value.toLowerCase();
 
-          const filteredCheckboxes = this.objects.filter((obj) => obj.name.toLowerCase().includes(searchTerm));
+          const filteredCheckboxes = this.objects.filter((obj) => obj[this.propertyName].toLowerCase().includes(searchTerm));
 
           this.checkboxesDiv.innerHTML = "";
           filteredCheckboxes.forEach((obj) => {
             const checkbox = document.createElement("input");
             checkbox.type = "checkbox";
             checkbox.name = "checkbox";
-            checkbox.value = obj.name;
-            checkbox.checked = this.selectedCheckboxes[obj.name] || false;
+            checkbox.value = obj[this.propertyName];
+            checkbox.checked = this.selectedCheckboxes[obj[this.propertyName]] || false;
             checkbox.addEventListener("change", () => {
-              this.selectedCheckboxes[obj.name] = checkbox.checked;
+              this.selectedCheckboxes[obj[this.propertyName]] = checkbox.checked;
             });
 
             const label = document.createElement("label");
-            label.appendChild(document.createTextNode(obj.name));
+            label.appendChild(document.createTextNode(obj[this.propertyName]));
 
             this.checkboxesDiv.appendChild(checkbox);
             this.checkboxesDiv.appendChild(label);
@@ -152,7 +161,7 @@
         }
 
         applyFilters() {
-          this.filteredObjects = this.objects.filter((obj) => this.selectedCheckboxes[obj.name]);
+          this.filteredObjects = this.objects.filter((obj) => this.selectedCheckboxes[obj[this.propertyName]]);
 
           console.log(this.filteredObjects);
           this.toggleDropdown();
@@ -164,14 +173,14 @@
             const checkbox = document.createElement("input");
             checkbox.type = "checkbox";
             checkbox.name = "checkbox";
-            checkbox.value = obj.name;
-            checkbox.checked = this.selectedCheckboxes[obj.name] || false;
+            checkbox.value = obj[this.propertyName];
+            checkbox.checked = this.selectedCheckboxes[obj[this.propertyName]] || false;
             checkbox.addEventListener("change", () => {
-              this.selectedCheckboxes[obj.name] = checkbox.checked;
+              this.selectedCheckboxes[obj[this.propertyName]] = checkbox.checked;
             });
 
             const label = document.createElement("label");
-            label.appendChild(document.createTextNode(obj.name));
+            label.appendChild(document.createTextNode(obj[this.propertyName]));
 
             this.checkboxesDiv.appendChild(checkbox);
             this.checkboxesDiv.appendChild(label);
