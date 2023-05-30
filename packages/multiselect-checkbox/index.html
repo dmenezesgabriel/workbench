@@ -68,10 +68,10 @@
               }
             </style>
             <div class="dropdown">
-              <div id="dropdownTitle"></div>
+              <div class="dropdown-title"></div>
+              <input type="search" id="searchInput" placeholder="Search..." />
               <button id="dropdownButton">Open Dropdown</button>
               <div id="dropdownContent" class="dropdown-content">
-                <input type="search" placeholder="Search..." />
                 <div id="checkboxes"></div>
                 <button id="applyButton">Apply</button>
               </div>
@@ -82,10 +82,10 @@
           this.shadowRoot.appendChild(template.content.cloneNode(true));
 
           // Get references to the elements
-          this.dropdownTitle = this.shadowRoot.querySelector("#dropdownTitle");
+          this.dropdownTitle = this.shadowRoot.querySelector(".dropdown-title");
           this.dropdownButton = this.shadowRoot.querySelector("#dropdownButton");
           this.dropdownContent = this.shadowRoot.querySelector("#dropdownContent");
-          this.searchInput = this.shadowRoot.querySelector('input[type="search"]');
+          this.searchInput = this.shadowRoot.querySelector("#searchInput");
           this.checkboxesDiv = this.shadowRoot.querySelector("#checkboxes");
           this.applyButton = this.shadowRoot.querySelector("#applyButton");
         }
@@ -97,7 +97,7 @@
         connectedCallback() {
           // Add event listeners
           this.dropdownButton.addEventListener("click", this.toggleDropdown.bind(this));
-          this.searchInput.addEventListener("input", this.filterCheckboxes.bind(this));
+          this.searchInput.addEventListener("input", this.handleSearchInput.bind(this));
           this.applyButton.addEventListener("click", this.applyFilters.bind(this));
 
           // Retrieve the initial objects and property name from the attributes
@@ -117,8 +117,6 @@
 
           // Render the initial checkboxes
           this.renderCheckboxes();
-          // Set the dropdown title
-          this.dropdownTitle.textContent = this.propertyName;
         }
 
         attributeChangedCallback(name, oldValue, newValue) {
@@ -128,7 +126,6 @@
           } else if (name === "property-name" && newValue !== oldValue) {
             this.propertyName = newValue;
             this.renderCheckboxes();
-            this.dropdownTitle.textContent = this.propertyName;
           }
         }
 
@@ -137,6 +134,17 @@
 
           if (this.dropdownContent.style.display === "block") {
             this.filterCheckboxes();
+          }
+        }
+
+        handleSearchInput() {
+          const searchTerm = this.searchInput.value.trim();
+
+          if (searchTerm.length > 0) {
+            this.dropdownContent.style.display = "block";
+            this.filterCheckboxes();
+          } else {
+            this.dropdownContent.style.display = "none";
           }
         }
 
