@@ -147,6 +147,7 @@
           if (this.isEditing) {
             const inputElement = this.shadowRoot.querySelector("input");
             inputElement.addEventListener("input", this.handleInputChange.bind(this));
+            inputElement.focus();
           }
         }
       }
