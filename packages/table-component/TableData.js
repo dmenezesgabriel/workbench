@@ -24,10 +24,13 @@ class TableData extends HTMLElement {
   attributeChangedCallback(name, oldValue, newValue) {
     if (name === "value") {
       this.value = newValue;
+      this.render();
     } else if (name === "format-function") {
       this.formatFunction = this.getFormatFunction(newValue);
+      this.render();
     } else if (name === "edition-enabled") {
       this.editionEnabled = newValue === "true";
+      this.render();
     }
   }
 
@@ -76,12 +79,14 @@ class TableData extends HTMLElement {
   handleBlur() {
     if (this.isEditing) {
       this.isEditing = false;
-      this.dispatchEvent(
-        new CustomEvent("update", {
-          detail: { originalValue: this.originalValue, newValue: this.value },
-        })
-      );
-      this.render();
+      if (this.originalValue !== this.value) {
+        this.dispatchEvent(
+          new CustomEvent("update", {
+            detail: { originalValue: this.originalValue, newValue: this.value },
+          })
+        );
+        this.render();
+      }
     }
   }
   handleKeyDown(event) {

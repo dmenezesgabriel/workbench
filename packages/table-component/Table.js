@@ -44,74 +44,28 @@ class TableComponent extends HTMLElement {
     this.render();
   }
 
+  getTableStyles() {
+    return `
+      <style>
+        .pagination {
+          margin-top: 16px;
+        }
+        .pagination button {
+          margin-right: 4px;
+        }
+        .rows-per-page {
+          margin-top: 8px;
+        }
+      </style>
+    `;
+  }
+
   render() {
     const data = this.data;
 
     if (Array.isArray(data)) {
-      const tableStyles = `
-            <style>
-              .pagination {
-                margin-top: 16px;
-              }
-              .pagination button {
-                margin-right: 4px;
-              }
-              .rows-per-page {
-                margin-top: 8px;
-              }
-            </style>
-          `;
-
-      const table = document.createElement("table");
-      const headerRow = document.createElement("tr");
-      const firstItem = data[0];
-
-      // Generate table headers
-      for (let key in firstItem) {
-        const headerCell = document.createElement("th");
-        const headerCellText = document.createElement("div");
-
-        headerCell.appendChild(headerCellText);
-
-        headerCellText.textContent = key;
-        headerRow.appendChild(headerCell);
-      }
-      table.appendChild(headerRow);
-
-      // Filter data
-      const filteredData = data.filter((item) => {
-        for (let key in this.filters) {
-          const filterValue = this.filters[key];
-          if (
-            filterValue &&
-            !item[key].toString().toLowerCase().includes(filterValue)
-          ) {
-            return false;
-          }
-        }
-        return true;
-      });
-
-      // Generate table rows
-      const startIndex = (this.currentPage - 1) * this.rowsPerPage;
-      const endIndex = Math.min(
-        startIndex + this.rowsPerPage,
-        filteredData.length
-      );
-
-      for (let i = startIndex; i < endIndex; i++) {
-        const item = filteredData[i];
-        const row = document.createElement("tr");
-        for (let key in item) {
-          this.createTableData(item, key, row);
-        }
-        table.appendChild(row);
-      }
-
-      // Clear the shadow DOM and append the table, styles, pagination, rows per page select, and filter inputs
-      this.shadowRoot.innerHTML = "";
-      this.shadowRoot.innerHTML = tableStyles;
-      this.shadowRoot.appendChild(table);
+      const filteredData = this.filterData(data);
+      this.createTable(data, filteredData);
 
       if (this.paginationEnabled) {
         // Add pagination
@@ -196,40 +150,72 @@ class TableComponent extends HTMLElement {
     }
   }
 
+  createTable(data, filteredData) {
+    const tableStyles = this.getTableStyles();
+    const table = document.createElement("table");
+    this.createHeaderRow(table, data);
+
+    const startIndex = (this.currentPage - 1) * this.rowsPerPage;
+    const endIndex = Math.min(
+      startIndex + this.rowsPerPage,
+      filteredData.length
+    );
+
+    for (let i = startIndex; i < endIndex; i++) {
+      const item = filteredData[i];
+      const row = document.createElement("tr");
+      for (let key in item) {
+        this.createTableData(item, key, row);
+      }
+      table.appendChild(row);
+    }
+
+    // Clear the shadow DOM and append the table, styles, pagination,
+    // rows per page select, and filter inputs
+    this.shadowRoot.innerHTML = "";
+    this.shadowRoot.innerHTML = tableStyles;
+    this.shadowRoot.appendChild(table);
+  }
+
+  createHeaderRow(table, data) {
+    const headerRow = document.createElement("tr");
+    const firstItem = data[0];
+    for (let key in firstItem) {
+      this.createTableHeader(headerRow, key);
+    }
+    table.appendChild(headerRow);
+  }
+
+  createTableHeader(row, key) {
+    const headerCell = document.createElement("th");
+    const headerCellText = document.createElement("div");
+    headerCell.appendChild(headerCellText);
+    headerCellText.textContent = key;
+    row.appendChild(headerCell);
+  }
+
   createTableData(data, key, row) {
     const cell = document.createElement("td");
     const cellData = document.createElement("table-data-component");
     cellData.setAttribute("value", data[key]);
     cellData.setAttribute("edition-enabled", true);
-
     cell.appendChild(cellData);
     row.appendChild(cell);
   }
 
-  sortData(key) {
-    if (this.data.length > 1) {
-      const dataType = typeof this.data[0][key];
-      const ascending = this.filters[key] !== "asc";
-
-      if (dataType === "number") {
-        this.data.sort((a, b) =>
-          ascending ? a[key] - b[key] : b[key] - a[key]
-        );
-      } else {
-        this.data.sort((a, b) => {
-          const valueA = a[key].toString().toLowerCase();
-          const valueB = b[key].toString().toLowerCase();
-
-          if (valueA < valueB) {
-            return ascending ? -1 : 1;
-          }
-          if (valueA > valueB) {
-            return ascending ? 1 : -1;
-          }
-          return 0;
-        });
+  filterData(data) {
+    return data.filter((item) => {
+      for (let key in this.filters) {
+        const filterValue = this.filters[key];
+        if (
+          filterValue &&
+          !item[key].toString().toLowerCase().includes(filterValue)
+        ) {
+          return false;
+        }
       }
-    }
+      return true;
+    });
   }
 }
 
