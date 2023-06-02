@@ -4,6 +4,45 @@ class DataFrame {
     this.columns = Object.keys(data[0]);
   }
 
+  asType(convertObject) {
+    const convertedData = [];
+    const convertMap = {};
+
+    for (const [key, targetType] of Object.entries(convertObject)) {
+      if (targetType === "string") {
+        convertMap[key] = String;
+      } else if (targetType === "number") {
+        convertMap[key] = Number;
+      } else if (targetType === "boolean") {
+        convertMap[key] = Boolean;
+      } else if (targetType.type === "Date") {
+        const options = targetType.options || {};
+        convertMap[key] = (value) => {
+          const formattedDate = new Date(value);
+          if (options.format) {
+            return formattedDate.toLocaleString(undefined, options.format);
+          } else {
+            return formattedDate;
+          }
+        };
+      }
+    }
+
+    for (const row of this.data) {
+      const convertedRow = {};
+      for (const [key, value] of Object.entries(row)) {
+        if (convertMap[key]) {
+          convertedRow[key] = convertMap[key](value);
+        } else {
+          convertedRow[key] = value;
+        }
+      }
+      convertedData.push(convertedRow);
+    }
+
+    return new DataFrame(convertedData);
+  }
+
   groupBy(properties) {
     return new GroupedDataFrame(this.data, properties);
   }
@@ -255,3 +294,20 @@ console.log(uniqueNames);
 // Filter the data where age is greater than 25
 const filteredData = df.filter((row) => row.age > 25);
 console.log(filteredData.data);
+
+data = [
+  { columnA: "John", columnB: "25", columnC: "1990-01-01" },
+  { columnA: "Alice", columnB: "30", columnC: "1985-06-12" },
+  { columnA: "Bob", columnB: "40", columnC: "1979-03-22" },
+];
+
+const convertObject = {
+  columnA: "string",
+  columnB: "number",
+  columnC: { type: "Date", options: { format: { year: "numeric", month: "long", day: "numeric" } } },
+};
+
+df = new DataFrame(data);
+const convertedDf = df.asType(convertObject);
+
+console.log(convertedDf.data);
