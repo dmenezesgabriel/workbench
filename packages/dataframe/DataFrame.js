@@ -212,6 +212,41 @@ class DataFrame {
 
     return new DataFrame(renamedData);
   }
+  merge(otherDataFrame, on) {
+    const mergedData = [];
+    const selfData = this.data;
+    const otherData = otherDataFrame.data;
+
+    const mergeColumns = Array.isArray(on) ? on : [on];
+
+    for (let i = 0; i < selfData.length; i++) {
+      const selfRow = selfData[i];
+
+      for (let j = 0; j < otherData.length; j++) {
+        const otherRow = otherData[j];
+
+        let isMatched = true;
+        for (let k = 0; k < mergeColumns.length; k++) {
+          const mergeColumn = mergeColumns[k];
+          if (selfRow[mergeColumn] !== otherRow[mergeColumn]) {
+            isMatched = false;
+            break;
+          }
+        }
+
+        if (isMatched) {
+          const mergedRow = { ...selfRow, ...otherRow };
+          mergedData.push(mergedRow);
+        }
+      }
+    }
+
+    if (mergedData.length === 0) {
+      return new DataFrame([{}]); // Return an empty DataFrame if no matches found
+    }
+
+    return new DataFrame(mergedData);
+  }
 }
 
 class GroupedDataFrame {
@@ -358,3 +393,25 @@ const renamedDf = df.rename({ A: "a", B: "c" });
 
 console.log(df.data);
 console.log(renamedDf.data);
+
+const data1 = [
+  { id: 1, name: "John" },
+  { id: 2, name: "Jane" },
+  { id: 3, name: "Bob" },
+];
+
+const data2 = [
+  { id: 1, age: 25 },
+  { id: 2, age: 30, name: "Jane" },
+];
+
+const df1 = new DataFrame(data1);
+const df2 = new DataFrame(data2);
+
+// Merge based on a single column name
+const mergedDf1 = df1.merge(df2, "id");
+console.log(mergedDf1.data);
+
+// Merge based on a list of column names
+const mergedDf2 = df1.merge(df2, ["id", "name"]);
+console.log(mergedDf2.data);
