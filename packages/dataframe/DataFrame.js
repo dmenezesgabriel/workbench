@@ -127,7 +127,7 @@ class DataFrame {
       const selectedRow = {};
       for (let j = 0; j < cols.length; j++) {
         const col = cols[j];
-        if (row.hasOwnProperty(col)) {
+        if (row.hasOwnProperty.call(col)) {
           selectedRow[col] = row[col];
         }
       }
@@ -184,6 +184,34 @@ class DataFrame {
     }
     return Array.from(uniqueValues);
   }
+
+  rename(columns) {
+    const renamedData = [];
+    const columnKeys = Object.keys(columns);
+
+    for (let i = 0; i < this.data.length; i++) {
+      const row = this.data[i];
+      const renamedRow = {};
+
+      for (let j = 0; j < columnKeys.length; j++) {
+        const prop = columnKeys[j];
+
+        if (Object.prototype.hasOwnProperty.call(row, prop)) {
+          renamedRow[columns[prop]] = row[prop];
+        }
+      }
+
+      for (let prop in row) {
+        if (!Object.prototype.hasOwnProperty.call(columns, prop)) {
+          renamedRow[prop] = row[prop];
+        }
+      }
+
+      renamedData.push(renamedRow);
+    }
+
+    return new DataFrame(renamedData);
+  }
 }
 
 class GroupedDataFrame {
@@ -217,7 +245,10 @@ function aggregateData(groupedData, aggregations) {
     const aggregatedRow = { ...groupData[0] };
     Object.entries(aggregations).forEach(([property, aggregator]) => {
       if (aggregator === "sum") {
-        aggregatedRow[property] = groupData.reduce((sum, row) => sum + row[property], 0);
+        aggregatedRow[property] = groupData.reduce(
+          (sum, row) => sum + row[property],
+          0
+        );
       } else if (aggregator === "avg") {
         const sum = groupData.reduce((sum, row) => sum + row[property], 0);
         aggregatedRow[property] = sum / groupData.length;
@@ -304,10 +335,26 @@ data = [
 const convertObject = {
   columnA: "string",
   columnB: "number",
-  columnC: { type: "Date", options: { format: { year: "numeric", month: "long", day: "numeric" } } },
+  columnC: {
+    type: "Date",
+    options: { format: { year: "numeric", month: "long", day: "numeric" } },
+  },
 };
 
 df = new DataFrame(data);
 const convertedDf = df.asType(convertObject);
 
 console.log(convertedDf.data);
+
+// Example usage
+data = [
+  { A: 1, B: 2 },
+  { A: 3, B: 4 },
+  // ... large object array
+];
+
+df = new DataFrame(data);
+const renamedDf = df.rename({ A: "a", B: "c" });
+
+console.log(df.data);
+console.log(renamedDf.data);
