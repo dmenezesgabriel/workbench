@@ -1,6 +1,46 @@
 class DataFrame {
   constructor(data) {
     this.data = data;
+    this.columns = Object.keys(data[0]);
+  }
+
+  asType(convertObject) {
+    const convertedData = [];
+    const convertMap = {};
+
+    for (const [key, targetType] of Object.entries(convertObject)) {
+      if (targetType === "string") {
+        convertMap[key] = String;
+      } else if (targetType === "number") {
+        convertMap[key] = Number;
+      } else if (targetType === "boolean") {
+        convertMap[key] = Boolean;
+      } else if (targetType.type === "Date") {
+        const options = targetType.options || {};
+        convertMap[key] = (value) => {
+          const formattedDate = new Date(value);
+          if (options.format) {
+            return formattedDate.toLocaleString(undefined, options.format);
+          } else {
+            return formattedDate;
+          }
+        };
+      }
+    }
+
+    for (const row of this.data) {
+      const convertedRow = {};
+      for (const [key, value] of Object.entries(row)) {
+        if (convertMap[key]) {
+          convertedRow[key] = convertMap[key](value);
+        } else {
+          convertedRow[key] = value;
+        }
+      }
+      convertedData.push(convertedRow);
+    }
+
+    return new DataFrame(convertedData);
   }
 
   groupBy(properties) {
@@ -78,6 +118,71 @@ class DataFrame {
     });
 
     return pivotTable;
+  }
+
+  select(...cols) {
+    const selectedData = [];
+    for (let i = 0; i < this.data.length; i++) {
+      const row = this.data[i];
+      const selectedRow = {};
+      for (let j = 0; j < cols.length; j++) {
+        const col = cols[j];
+        if (row.hasOwnProperty(col)) {
+          selectedRow[col] = row[col];
+        }
+      }
+      selectedData.push(selectedRow);
+    }
+
+    return new DataFrame(selectedData);
+  }
+
+  *[Symbol.iterator]() {
+    for (let i = 0; i < this.data.length; i++) {
+      yield this.data[i];
+    }
+  }
+
+  filter(condition) {
+    const filteredData = [];
+    for (const row of this) {
+      if (condition(row)) {
+        filteredData.push(row);
+      }
+    }
+    return new DataFrame(filteredData);
+  }
+
+  sort(col, ascending = true) {
+    const sortedData = this.data.slice().sort((a, b) => {
+      if (a[col] < b[col]) return ascending ? -1 : 1;
+      if (a[col] > b[col]) return ascending ? 1 : -1;
+      return 0;
+    });
+    return new DataFrame(sortedData);
+  }
+
+  count() {
+    return this.data.length;
+  }
+
+  head(numLines = 5) {
+    const linesToShow = this.data.slice(0, numLines);
+    console.table(linesToShow);
+  }
+
+  tail(numLines = 5) {
+    const linesToShow = this.data.slice(-numLines);
+    console.table(linesToShow);
+  }
+
+  unique(property) {
+    const uniqueValues = new Set();
+    for (let i = 0, len = this.data.length; i < len; i++) {
+      const value = this.data[i][property];
+      uniqueValues.add(value);
+    }
+    return Array.from(uniqueValues);
   }
 }
 
@@ -165,3 +270,44 @@ data = [
 df = new DataFrame(data);
 const pivotTable = df.pivot("Country", "Year", "Sales");
 console.log(pivotTable);
+
+// Sample data
+data = [
+  { name: "John", age: 30, city: "New York" },
+  { name: "Alice", age: 25, city: "London" },
+  { name: "Bob", age: 35, city: "Paris" },
+  { name: "Alice", age: 28, city: "San Francisco" },
+  // ... More data
+];
+
+// Create a DataFrame instance
+df = new DataFrame(data);
+
+df.head(4); // Show first 5 rows
+
+console.log(df.select("name", "age"));
+
+// Get unique values for the "name" property
+const uniqueNames = df.unique("name");
+console.log(uniqueNames);
+
+// Filter the data where age is greater than 25
+const filteredData = df.filter((row) => row.age > 25);
+console.log(filteredData.data);
+
+data = [
+  { columnA: "John", columnB: "25", columnC: "1990-01-01" },
+  { columnA: "Alice", columnB: "30", columnC: "1985-06-12" },
+  { columnA: "Bob", columnB: "40", columnC: "1979-03-22" },
+];
+
+const convertObject = {
+  columnA: "string",
+  columnB: "number",
+  columnC: { type: "Date", options: { format: { year: "numeric", month: "long", day: "numeric" } } },
+};
+
+df = new DataFrame(data);
+const convertedDf = df.asType(convertObject);
+
+console.log(convertedDf.data);
