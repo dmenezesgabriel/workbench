@@ -287,10 +287,30 @@ function aggregateData(groupedData, aggregations) {
       } else if (aggregator === "avg") {
         const sum = groupData.reduce((sum, row) => sum + row[property], 0);
         aggregatedRow[property] = sum / groupData.length;
+      } else if (aggregator === "quartile") {
+        const values = groupData
+          .map((row) => row[property])
+          .sort((a, b) => a - b);
+        const q1 = calculateQuartile(values, 0.25);
+        const q2 = calculateQuartile(values, 0.5);
+        const q3 = calculateQuartile(values, 0.75);
+        aggregatedRow[`${property}_q1`] = q1;
+        aggregatedRow[`${property}_q2`] = q2;
+        aggregatedRow[`${property}_q3`] = q3;
       }
     });
     return aggregatedRow;
   });
+}
+
+function calculateQuartile(values, percentile) {
+  const index = (values.length - 1) * percentile;
+  const lower = Math.floor(index);
+  const upper = Math.ceil(index);
+  const interpolation = index % 1;
+  const lowerValue = values[lower];
+  const upperValue = values[upper];
+  return lowerValue + (upperValue - lowerValue) * interpolation;
 }
 
 // Example usage
@@ -302,7 +322,7 @@ let data = [
 ];
 
 let df = new DataFrame(data);
-const grouped = df.groupBy(["property1", "property2"]).agg({
+let grouped = df.groupBy(["property1", "property2"]).agg({
   property3: "sum",
   property4: "avg",
 });
@@ -415,3 +435,19 @@ console.log(mergedDf1.data);
 // Merge based on a list of column names
 const mergedDf2 = df1.merge(df2, ["id", "name"]);
 console.log(mergedDf2.data);
+
+data = [
+  { category: "A", value: 10 },
+  { category: "A", value: 15 },
+  { category: "B", value: 20 },
+  { category: "B", value: 25 },
+  { category: "B", value: 30 },
+  { category: "C", value: 35 },
+];
+
+df = new DataFrame(data);
+grouped = df.groupBy(["category"]).agg({
+  value: "quartile",
+});
+
+console.log(grouped.data);
