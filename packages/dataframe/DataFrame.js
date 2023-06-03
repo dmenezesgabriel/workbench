@@ -313,6 +313,7 @@ function calculateQuartile(values, percentile) {
   return lowerValue + (upperValue - lowerValue) * interpolation;
 }
 
+// Examples //
 // Example usage
 let data = [
   { property1: "A", property2: "Y", property3: 10, property4: 5 },
