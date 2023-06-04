@@ -79,6 +79,32 @@ class LogStrategy {
   }
 }
 
+class SilentLogStrategy extends LogStrategy {
+  constructor(options = {}) {
+    super(options);
+  }
+
+  log() {
+    // Do nothing, silent logging
+  }
+
+  error() {
+    // Do nothing, silent logging
+  }
+
+  success() {
+    // Do nothing, silent logging
+  }
+
+  warning() {
+    // Do nothing, silent logging
+  }
+
+  info() {
+    // Do nothing, silent logging
+  }
+}
+
 // Usage example:
 const consoleToolkit = new ConsoleToolkit();
 const logStrategy = new LogStrategy({ showDate: true });
@@ -95,3 +121,7 @@ consoleToolkit.custom(
   "Custom message",
   "color: purple; background-color: yellow"
 );
+
+consoleToolkit.setStrategy(new SilentLogStrategy());
+consoleToolkit.log("Log message"); // No output
+consoleToolkit.error("Error message"); // No output
