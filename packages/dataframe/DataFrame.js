@@ -212,7 +212,7 @@ class DataFrame {
 
     return new DataFrame(renamedData);
   }
-  merge(otherDataFrame, on) {
+  merge(otherDataFrame, on, how = "inner") {
     const mergedData = [];
     const selfData = this.data;
     const otherData = otherDataFrame.data;
@@ -243,6 +243,101 @@ class DataFrame {
 
     if (mergedData.length === 0) {
       return new DataFrame([{}]); // Return an empty DataFrame if no matches found
+    }
+
+    if (how === "left") {
+      const leftData = selfData
+        .map((selfRow) => {
+          let matchedOtherRows = otherData.filter((otherRow) => {
+            let isMatched = true;
+            for (let k = 0; k < mergeColumns.length; k++) {
+              const mergeColumn = mergeColumns[k];
+              if (selfRow[mergeColumn] !== otherRow[mergeColumn]) {
+                isMatched = false;
+                break;
+              }
+            }
+            return isMatched;
+          });
+          if (matchedOtherRows.length > 0) {
+            return matchedOtherRows.map((otherRow) => {
+              return { ...selfRow, ...otherRow };
+            });
+          } else {
+            return selfRow;
+          }
+        })
+        .flat();
+      return new DataFrame(leftData);
+    }
+
+    if (how === "right") {
+      const rightData = otherData
+        .map((otherRow) => {
+          let matchedSelfRows = selfData.filter((selfRow) => {
+            let isMatched = true;
+            for (let k = 0; k < mergeColumns.length; k++) {
+              const mergeColumn = mergeColumns[k];
+              if (selfRow[mergeColumn] !== otherRow[mergeColumn]) {
+                isMatched = false;
+                break;
+              }
+            }
+            return isMatched;
+          });
+          if (matchedSelfRows.length > 0) {
+            return matchedSelfRows.map((selfRow) => {
+              return { ...selfRow, ...otherRow };
+            });
+          } else {
+            return otherRow;
+          }
+        })
+        .flat();
+      return new DataFrame(rightData);
+    }
+
+    if (how === "outer") {
+      const outerData = [];
+      for (let i = 0; i < selfData.length; i++) {
+        const selfRow = selfData[i];
+        let matchedOtherRows = otherData.filter((otherRow) => {
+          let isMatched = true;
+          for (let k = 0; k < mergeColumns.length; k++) {
+            const mergeColumn = mergeColumns[k];
+            if (selfRow[mergeColumn] !== otherRow[mergeColumn]) {
+              isMatched = false;
+              break;
+            }
+          }
+          return isMatched;
+        });
+        if (matchedOtherRows.length > 0) {
+          matchedOtherRows.forEach((otherRow) => {
+            outerData.push({ ...selfRow, ...otherRow });
+          });
+        } else {
+          outerData.push(selfRow);
+        }
+      }
+      for (let j = 0; j < otherData.length; j++) {
+        const otherRow = otherData[j];
+        let matchedSelfRows = selfData.filter((selfRow) => {
+          let isMatched = true;
+          for (let k = 0; k < mergeColumns.length; k++) {
+            const mergeColumn = mergeColumns[k];
+            if (selfRow[mergeColumn] !== otherRow[mergeColumn]) {
+              isMatched = false;
+              break;
+            }
+          }
+          return isMatched;
+        });
+        if (matchedSelfRows.length === 0) {
+          outerData.push(otherRow);
+        }
+      }
+      return new DataFrame(outerData);
     }
 
     return new DataFrame(mergedData);
@@ -430,7 +525,7 @@ const df1 = new DataFrame(data1);
 const df2 = new DataFrame(data2);
 
 // Merge based on a single column name
-const mergedDf1 = df1.merge(df2, "id");
+const mergedDf1 = df1.merge(df2, "id", "left");
 console.log(mergedDf1.data);
 
 // Merge based on a list of column names
