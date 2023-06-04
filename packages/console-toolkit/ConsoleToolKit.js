@@ -1,8 +1,42 @@
 class ConsoleToolkit {
   constructor() {}
 
+  setStrategy(strategy) {
+    this.strategy = strategy;
+  }
+
   log(message, options = {}) {
-    const { color, backgroundColor, fontWeight, showDate } = options;
+    this.strategy.log(message, options);
+  }
+
+  error(message, options = {}) {
+    this.strategy.error(message, options);
+  }
+
+  success(message, options = {}) {
+    this.strategy.success(message, options);
+  }
+
+  warning(message, options = {}) {
+    this.strategy.warning(message, options);
+  }
+
+  info(message, options = {}) {
+    this.strategy.info(message, options);
+  }
+
+  custom(message, styles = "") {
+    console.log(`%c${message}`, styles);
+  }
+}
+
+class LogStrategy {
+  constructor(options = {}) {
+    this.options = options;
+  }
+
+  log(message) {
+    const { color, backgroundColor, fontWeight, showDate } = this.options;
     const styles = [];
 
     if (color) {
@@ -24,42 +58,37 @@ class ConsoleToolkit {
     console.log(`%c${logMessage}`, styles.join(";"));
   }
 
-  error(message, options = {}) {
-    options.color = "red";
-    this.log(`Error: ${message}`, options);
+  error(message) {
+    this.options.color = "red";
+    this.log(`Error: ${message}`);
   }
 
-  success(message, options = {}) {
-    options.color = "green";
-    this.log(`Success: ${message}`, options);
+  success(message) {
+    this.options.color = "green";
+    this.log(`Success: ${message}`);
   }
 
-  warning(message, options = {}) {
-    options.color = "orange";
-    this.log(`Warning: ${message}`, options);
+  warning(message) {
+    this.options.color = "orange";
+    this.log(`Warning: ${message}`);
   }
 
-  info(message, options = {}) {
-    options.color = "blue";
-    this.log(`Info: ${message}`, options);
-  }
-
-  custom(message, styles = "") {
-    console.log(`%c${message}`, styles);
+  info(message) {
+    this.options.color = "blue";
+    this.log(`Info: ${message}`);
   }
 }
 
 // Usage example:
 const consoleToolkit = new ConsoleToolkit();
+const logStrategy = new LogStrategy({ showDate: true });
+consoleToolkit.setStrategy(logStrategy);
 
-consoleToolkit.log("Hello, world!", { color: "green", showDate: true });
-consoleToolkit.error("Something went wrong!", {
-  fontWeight: "bold",
-  showDate: true,
-});
-consoleToolkit.success("Operation successful!", { showDate: true });
-consoleToolkit.warning("Please proceed with caution.", { showDate: true });
-consoleToolkit.info("Here is some important information.", { showDate: true });
+consoleToolkit.log("Hello, world!", { color: "green" });
+consoleToolkit.error("Something went wrong!", { fontWeight: "bold" });
+consoleToolkit.success("Operation successful!");
+consoleToolkit.warning("Please proceed with caution.");
+consoleToolkit.info("Here is some important information.");
 
 // Custom styling example:
 consoleToolkit.custom(
