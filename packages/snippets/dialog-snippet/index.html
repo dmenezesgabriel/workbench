@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dialog Web Component</title>
+    <style>
+      /* Styling for the dialog */
+      .dialog-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+      }
+
+      /* Styling for the buttons */
+      .button-container {
+        margin-top: 16px;
+        display: flex;
+        justify-content: center;
+      }
+
+      button {
+        margin: 0 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <dialog id="my-dialog">
+      <h2>Welcome to the Dialog!</h2>
+      <p>This is a simple dialog example.</p>
+      <button id="close-dialog">Close</button>
+    </dialog>
+
+    <div class="dialog-container">
+      <h1>Dialog Web Component Example</h1>
+      <div class="button-container">
+        <button id="open-dialog">Open Dialog</button>
+      </div>
+    </div>
+
+    <script>
+      // Define the dialog web component
+
+      // Get references to the dialog and buttons
+      const dialog = document.getElementById("my-dialog");
+      const openDialogButton = document.getElementById("open-dialog");
+      const closeDialogButton = document.getElementById("close-dialog");
+
+      // Open the dialog when the "Open Dialog" button is clicked
+      openDialogButton.addEventListener("click", () => {
+        dialog.showModal();
+      });
+
+      // Close the dialog when the "Close" button inside the dialog is clicked
+      closeDialogButton.addEventListener("click", () => {
+        dialog.close();
+      });
+    </script>
+  </body>
+</html>
