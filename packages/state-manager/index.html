@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>My Web Component</title>
+  </head>
+  <body>
+    <my-component></my-component>
+
+    <script>
+      // Define the StateManager class
+      class StateManager {
+        constructor() {
+          this.stores = {};
+        }
+
+        registerStore(name, store) {
+          this.stores[name] = store;
+        }
+
+        getStore(name) {
+          return this.stores[name];
+        }
+      }
+
+      // Define the Store class
+      class Store {
+        constructor(initialState, actions = {}, getters = {}) {
+          this.state = initialState;
+          this.actions = actions;
+          this.getters = getters;
+          this.listeners = [];
+        }
+
+        getState() {
+          return this.state;
+        }
+
+        setState(newState) {
+          this.state = { ...this.state, ...newState };
+          this.notifyListeners();
+        }
+
+        registerAction(name, action) {
+          this.actions[name] = action;
+        }
+
+        getAction(name) {
+          return this.actions[name];
+        }
+
+        registerGetter(name, getter) {
+          this.getters[name] = getter;
+        }
+
+        getGetter(name) {
+          return this.getters[name];
+        }
+
+        addListener(listener) {
+          this.listeners.push(listener);
+        }
+
+        removeListener(listener) {
+          this.listeners = this.listeners.filter((l) => l !== listener);
+        }
+
+        notifyListeners() {
+          this.listeners.forEach((listener) => listener());
+        }
+      }
+
+      // Define a sample store with a count state and a doubleCount getter
+      const myStore = new Store(
+        { count: 0 },
+        {
+          increment: () =>
+            myStore.setState({ count: myStore.getState().count + 1 }),
+        },
+        {
+          doubleCount: () => myStore.getState().count * 2,
+        }
+      );
+
+      // Define a sample component that uses the store
+      class MyComponent extends HTMLElement {
+        constructor() {
+          super();
+          this.stateManager = new StateManager();
+          this.stateManager.registerStore("myStore", myStore);
+        }
+
+        connectedCallback() {
+          const myStore = this.stateManager.getStore("myStore");
+          myStore.addListener(() => this.render());
+          this.render();
+        }
+
+        render() {
+          const myStore = this.stateManager.getStore("myStore");
+          this.innerHTML = `
+            <div>
+              <p>Count: ${myStore.getState().count}</p>
+              <p>Double Count: ${myStore.getGetter("doubleCount")()}</p>
+              <button>Increment</button>
+            </div>
+          `;
+
+          const incrementButton = this.querySelector("button");
+          incrementButton.addEventListener("click", () => {
+            myStore.getAction("increment")();
+          });
+        }
+      }
+
+      customElements.define("my-component", MyComponent);
+    </script>
+  </body>
+</html>
