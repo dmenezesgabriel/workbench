@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Cascading Checkbox Filters</title>
+    <style>
+      table {
+        border-collapse: collapse;
+        width: 100%;
+      }
+
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+      }
+
+      .filter-group {
+        margin-bottom: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Cascading Checkbox Filters</h2>
+
+    <div class="filter-group">
+      <label for="category">Category:</label><br />
+      <input type="checkbox" id="fruit" class="category-filter" value="fruit" />
+      <label for="fruit">Fruit</label><br />
+      <input
+        type="checkbox"
+        id="vegetable"
+        class="category-filter"
+        value="vegetable"
+      />
+      <label for="vegetable">Vegetable</label><br />
+      <input type="checkbox" id="meat" class="category-filter" value="meat" />
+      <label for="meat">Meat</label><br />
+    </div>
+
+    <div class="filter-group">
+      <label for="type">Type:</label><br />
+      <input type="checkbox" id="apple" class="type-filter" value="apple" />
+      <label for="apple">Apple</label><br />
+      <input type="checkbox" id="banana" class="type-filter" value="banana" />
+      <label for="banana">Banana</label><br />
+      <input type="checkbox" id="carrot" class="type-filter" value="carrot" />
+      <label for="carrot">Carrot</label><br />
+      <input type="checkbox" id="tomato" class="type-filter" value="tomato" />
+      <label for="tomato">Tomato</label><br />
+      <input type="checkbox" id="beef" class="type-filter" value="beef" />
+      <label for="beef">Beef</label><br />
+      <input type="checkbox" id="chicken" class="type-filter" value="chicken" />
+      <label for="chicken">Chicken</label><br />
+    </div>
+
+    <table id="productTable">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Category</th>
+          <th>Type</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Apple</td>
+          <td>fruit</td>
+          <td>apple</td>
+        </tr>
+        <tr>
+          <td>Banana</td>
+          <td>fruit</td>
+          <td>banana</td>
+        </tr>
+        <tr>
+          <td>Carrot</td>
+          <td>vegetable</td>
+          <td>carrot</td>
+        </tr>
+        <tr>
+          <td>Tomato</td>
+          <td>vegetable</td>
+          <td>tomato</td>
+        </tr>
+        <tr>
+          <td>Beef</td>
+          <td>meat</td>
+          <td>beef</td>
+        </tr>
+        <tr>
+          <td>Chicken</td>
+          <td>meat</td>
+          <td>chicken</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        var categoryFilters =
+          document.getElementsByClassName("category-filter");
+        var typeFilters = document.getElementsByClassName("type-filter");
+        var table = document.getElementById("productTable");
+
+        function filterTable() {
+          var selectedCategories = Array.from(categoryFilters)
+            .filter((filter) => filter.checked)
+            .map((filter) => filter.value);
+          var selectedTypes = Array.from(typeFilters)
+            .filter((filter) => filter.checked)
+            .map((filter) => filter.value);
+          var rows = table.getElementsByTagName("tr");
+
+          for (var i = 1; i < rows.length; i++) {
+            var currentCategory =
+              rows[i].getElementsByTagName("td")[1].textContent;
+            var currentType = rows[i].getElementsByTagName("td")[2].textContent;
+
+            var categoryMatch =
+              selectedCategories.length === 0 ||
+              selectedCategories.includes(currentCategory);
+            var typeMatch =
+              selectedTypes.length === 0 || selectedTypes.includes(currentType);
+
+            if (categoryMatch && typeMatch) {
+              rows[i].style.display = "";
+            } else {
+              rows[i].style.display = "none";
+            }
+          }
+        }
+
+        Array.from(categoryFilters).forEach(function (filter) {
+          filter.addEventListener("change", filterTable);
+        });
+
+        Array.from(typeFilters).forEach(function (filter) {
+          filter.addEventListener("change", filterTable);
+        });
+      });
+    </script>
+  </body>
+</html>
