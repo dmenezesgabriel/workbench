@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>IndexedDB ORM Example</title>
+    <script>
+      // IndexedDBORM class
+      class IndexedDBORM {
+        constructor(databaseName, version, objectStoreName) {
+          this.databaseName = databaseName;
+          this.version = version;
+          this.objectStoreName = objectStoreName;
+          this.db = null;
+        }
+
+        open() {
+          return new Promise((resolve, reject) => {
+            const request = indexedDB.open(this.databaseName, this.version);
+
+            request.onupgradeneeded = (event) => {
+              this.db = event.target.result;
+              this.createObjectStore();
+            };
+
+            request.onsuccess = (event) => {
+              this.db = event.target.result;
+              resolve();
+            };
+
+            request.onerror = (event) => {
+              reject(event.target.error);
+            };
+          });
+        }
+
+        createObjectStore() {
+          if (!this.db.objectStoreNames.contains(this.objectStoreName)) {
+            this.db.createObjectStore(this.objectStoreName, {
+              keyPath: "id",
+              autoIncrement: true,
+            });
+          }
+        }
+
+        insert(data) {
+          return new Promise((resolve, reject) => {
+            const transaction = this.db.transaction(
+              [this.objectStoreName],
+              "readwrite"
+            );
+            const objectStore = transaction.objectStore(this.objectStoreName);
+
+            const request = objectStore.add(data);
+
+            request.onsuccess = () => {
+              resolve(request.result);
+            };
+
+            request.onerror = () => {
+              reject(request.error);
+            };
+          });
+        }
+
+        update(id, data) {
+          return new Promise((resolve, reject) => {
+            const transaction = this.db.transaction(
+              [this.objectStoreName],
+              "readwrite"
+            );
+            const objectStore = transaction.objectStore(this.objectStoreName);
+
+            const getRequest = objectStore.get(id);
+
+            getRequest.onsuccess = () => {
+              const existingData = getRequest.result;
+              if (existingData) {
+                const updatedData = { ...existingData, ...data };
+
+                const updateRequest = objectStore.put(updatedData, id);
+
+                updateRequest.onsuccess = () => {
+                  resolve(updatedData);
+                };
+
+                updateRequest.onerror = () => {
+                  reject(updateRequest.error);
+                };
+              } else {
+                reject(new Error(`Data with ID ${id} does not exist.`));
+              }
+            };
+
+            getRequest.onerror = () => {
+              reject(getRequest.error);
+            };
+          });
+        }
+
+        delete(id) {
+          return new Promise((resolve, reject) => {
+            const transaction = this.db.transaction(
+              [this.objectStoreName],
+              "readwrite"
+            );
+            const objectStore = transaction.objectStore(this.objectStoreName);
+
+            const request = objectStore.delete(id);
+
+            request.onsuccess = () => {
+              resolve();
+            };
+
+            request.onerror = () => {
+              reject(request.error);
+            };
+          });
+        }
+
+        getById(id) {
+          return new Promise((resolve, reject) => {
+            const transaction = this.db.transaction(
+              [this.objectStoreName],
+              "readonly"
+            );
+            const objectStore = transaction.objectStore(this.objectStoreName);
+
+            const request = objectStore.get(id);
+
+            request.onsuccess = () => {
+              const data = request.result;
+              if (data) {
+                resolve(data);
+              } else {
+                reject(new Error(`Data with ID ${id} does not exist.`));
+              }
+            };
+
+            request.onerror = () => {
+              reject(request.error);
+            };
+          });
+        }
+
+        getAll() {
+          return new Promise((resolve, reject) => {
+            const transaction = this.db.transaction(
+              [this.objectStoreName],
+              "readonly"
+            );
+            const objectStore = transaction.objectStore(this.objectStoreName);
+            const request = objectStore.getAll();
+
+            request.onsuccess = () => {
+              resolve(request.result);
+            };
+
+            request.onerror = () => {
+              reject(request.error);
+            };
+          });
+        }
+      }
+
+      // Usage example
+      document.addEventListener("DOMContentLoaded", () => {
+        const orm = new IndexedDBORM("myDatabase", 1, "myObjectStore");
+
+        orm
+          .open()
+          .then(() => {
+            return orm.insert({ name: "John", age: 25 });
+          })
+          .then(() => {
+            return orm.insert({ name: "Jane", age: 30 });
+          })
+          .then(() => {
+            return orm.getAll();
+          })
+          .then((data) => {
+            console.log(data); // Array containing all the inserted objects
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+      });
+    </script>
+  </head>
+  <body>
+    <!-- Content of your HTML page goes here -->
+  </body>
+</html>
