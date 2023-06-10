@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Content Security Policy Example</title>
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline'"
+    />
+  </head>
+  <body>
+    <h1>Content Security Policy Example</h1>
+    <script>
+      // This script will execute because it is allowed by the CSP policy
+      console.log("Hello, world!");
+    </script>
+    <script src="https://example.com/external-script.js"></script>
+  </body>
+</html>

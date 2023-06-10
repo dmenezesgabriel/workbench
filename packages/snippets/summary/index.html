@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Collapsible Content Example</title>
+    <style>
+      summary {
+        font-weight: bold;
+        cursor: pointer;
+      }
+
+      details[open] summary::after {
+        content: "▼";
+      }
+
+      details:not([open]) summary::after {
+        content: "►";
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Collapsible Content Example</h1>
+
+    <details>
+      <summary>Show More</summary>
+      <p>
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur
+        ullamcorper neque vitae justo sollicitudin, eget placerat turpis
+        malesuada.
+      </p>
+      <p>
+        Morbi accumsan felis eu sapien cursus pulvinar. Suspendisse potenti. Sed
+        vel magna at ligula dignissim ultricies.
+      </p>
+    </details>
+
+    <details>
+      <summary>Expand Me</summary>
+      <ul>
+        <li>Item 1</li>
+        <li>Item 2</li>
+        <li>Item 3</li>
+      </ul>
+    </details>
+
+    <details>
+      <summary>Toggle to See More</summary>
+      <img src="example-image.jpg" alt="Example Image" />
+    </details>
+  </body>
+</html>
