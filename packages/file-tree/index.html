@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>File Tree Example</title>
+  </head>
+  <body>
+    <h1>File Tree Example</h1>
+
+    <file-tree
+      data='{"directory1":{"file1":"File 1","file2":"File 2"},"directory2":{"file3":"File 3","directory3":{"file4":"File 4"}}}'
+    ></file-tree>
+
+    <script>
+      class FileTree extends HTMLElement {
+        constructor() {
+          super();
+          this.attachShadow({ mode: "open" });
+          this.shadowRoot.innerHTML = `
+          <style>
+            ul {
+              list-style-type: none;
+              padding-left: 0;
+            }
+
+            li {
+              margin-left: 15px;
+            }
+          </style>
+          <ul></ul>
+        `;
+        }
+
+        connectedCallback() {
+          const data = JSON.parse(this.getAttribute("data"));
+          const ul = this.shadowRoot.querySelector("ul");
+          this.renderTree(data, ul, 0);
+        }
+
+        renderTree(treeData, parentNode, level) {
+          Object.entries(treeData).forEach(([name, value]) => {
+            const li = document.createElement("li");
+
+            if (typeof value === "object") {
+              const details = document.createElement("details");
+              const summary = document.createElement("summary");
+              summary.textContent = name;
+
+              details.appendChild(summary);
+              li.appendChild(details);
+              parentNode.appendChild(li);
+              this.renderTree(value, details, level + 1);
+            } else {
+              li.textContent = name;
+              parentNode.appendChild(li);
+            }
+          });
+        }
+      }
+
+      customElements.define("file-tree", FileTree);
+    </script>
+  </body>
+</html>
