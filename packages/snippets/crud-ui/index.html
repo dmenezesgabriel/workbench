@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>IndexedDB CRUD</title>
+    <style>
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        padding: 8px;
+        border-bottom: 1px solid #ddd;
+        text-align: left;
+      }
+
+      button {
+        padding: 5px 10px;
+        cursor: pointer;
+      }
+
+      #modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+        justify-content: center;
+        align-items: center;
+      }
+
+      #modal-content {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 5px;
+        max-width: 400px;
+        width: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <button id="create-button">Create New</button>
+
+    <table id="data-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <div id="modal">
+      <div id="modal-content">
+        <h2>Add New Record</h2>
+        <form id="add-form">
+          <input type="text" id="name" placeholder="Name" required />
+          <input type="email" id="email" placeholder="Email" required />
+          <button type="submit">Add</button>
+          <button id="close-button">Close</button>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      class IndexedDB {
+        constructor(dbName, version) {
+          this.dbName = dbName;
+          this.version = version;
+          this.db = null;
+        }
+
+        open() {
+          if (!window.indexedDB) {
+            console.log("Your browser doesn't support IndexedDB.");
+            return;
+          }
+
+          const request = window.indexedDB.open(this.dbName, this.version);
+          request.onerror = (event) => {
+            console.log("Database error: " + event.target.errorCode);
+          };
+
+          request.onsuccess = (event) => {
+            this.db = event.target.result;
+            this.displayData();
+          };
+
+          request.onupgradeneeded = (event) => {
+            this.db = event.target.result;
+            this.createContactsObjectStore();
+          };
+        }
+
+        createContactsObjectStore() {
+          const objectStore = this.db.createObjectStore("contacts", {
+            keyPath: "id",
+            autoIncrement: true,
+          });
+          objectStore.createIndex("name", "name", { unique: false });
+          objectStore.createIndex("email", "email", { unique: true });
+        }
+
+        addRecord(name, email) {
+          const transaction = this.db.transaction(["contacts"], "readwrite");
+          const objectStore = transaction.objectStore("contacts");
+
+          const record = {
+            name: name,
+            email: email,
+          };
+
+          const request = objectStore.add(record);
+
+          request.onsuccess = () => {
+            this.clearForm();
+            this.displayData();
+            this.closeModal();
+          };
+
+          request.onerror = () => {
+            console.log("Error adding record to the database.");
+          };
+        }
+
+        updateRecord(id, name, email) {
+          const transaction = this.db.transaction(["contacts"], "readwrite");
+          const objectStore = transaction.objectStore("contacts");
+
+          const request = objectStore.get(id);
+
+          request.onsuccess = () => {
+            const record = request.result;
+
+            if (record) {
+              record.name = name;
+              record.email = email;
+
+              objectStore.put(record);
+              this.displayData();
+            }
+          };
+
+          request.onerror = () => {
+            console.log("Error updating record in the database.");
+          };
+        }
+
+        deleteRecord(id) {
+          const transaction = this.db.transaction(["contacts"], "readwrite");
+          const objectStore = transaction.objectStore("contacts");
+
+          const request = objectStore.delete(id);
+
+          request.onsuccess = () => {
+            this.displayData();
+          };
+
+          request.onerror = () => {
+            console.log("Error deleting record from the database.");
+          };
+        }
+
+        displayData() {
+          const objectStore = this.db
+            .transaction("contacts")
+            .objectStore("contacts");
+          const tableBody = document.querySelector("#data-table tbody");
+
+          tableBody.innerHTML = "";
+
+          objectStore.openCursor().onsuccess = (event) => {
+            const cursor = event.target.result;
+
+            if (cursor) {
+              const row = document.createElement("tr");
+
+              const nameCell = document.createElement("td");
+              nameCell.textContent = cursor.value.name;
+              row.appendChild(nameCell);
+
+              const emailCell = document.createElement("td");
+              emailCell.textContent = cursor.value.email;
+              row.appendChild(emailCell);
+
+              const actionsCell = document.createElement("td");
+              const editButton = document.createElement("button");
+              editButton.textContent = "Edit";
+              editButton.addEventListener("click", () => {
+                this.toggleEditable(row);
+              });
+              actionsCell.appendChild(editButton);
+
+              const deleteButton = document.createElement("button");
+              deleteButton.textContent = "Delete";
+              deleteButton.addEventListener("click", () => {
+                this.deleteRecord(cursor.value.id);
+              });
+              actionsCell.appendChild(deleteButton);
+
+              row.appendChild(actionsCell);
+
+              tableBody.appendChild(row);
+
+              cursor.continue();
+            }
+          };
+        }
+
+        toggleEditable(row) {
+          const editButton = row.querySelector("button");
+          const cells = row.querySelectorAll("td:not(:last-child)");
+
+          if (editButton.textContent === "Edit") {
+            cells.forEach((cell) => {
+              cell.contentEditable = true;
+            });
+
+            editButton.textContent = "Save";
+          } else {
+            const id = row.rowIndex - 1;
+            const name = cells[0].textContent;
+            const email = cells[1].textContent;
+
+            this.updateRecord(id, name, email);
+
+            cells.forEach((cell) => {
+              cell.contentEditable = false;
+            });
+
+            editButton.textContent = "Edit";
+          }
+        }
+
+        clearForm() {
+          document.querySelector("#name").value = "";
+          document.querySelector("#email").value = "";
+        }
+
+        openModal() {
+          const modal = document.querySelector("#modal");
+          modal.style.display = "flex";
+        }
+
+        closeModal() {
+          const modal = document.querySelector("#modal");
+          modal.style.display = "none";
+        }
+      }
+
+      class UI {
+        constructor() {
+          this.indexedDB = new IndexedDB("crudDB", 1);
+        }
+
+        initialize() {
+          this.indexedDB.open();
+
+          const createButton = document.querySelector("#create-button");
+          createButton.addEventListener("click", () => {
+            this.indexedDB.openModal();
+          });
+
+          const closeButton = document.querySelector("#close-button");
+          closeButton.addEventListener("click", () => {
+            this.indexedDB.closeModal();
+          });
+
+          document
+            .querySelector("#add-form")
+            .addEventListener("submit", (event) => {
+              event.preventDefault();
+
+              const name = document.querySelector("#name").value;
+              const email = document.querySelector("#email").value;
+
+              if (name && email) {
+                this.indexedDB.addRecord(name, email);
+              }
+            });
+        }
+      }
+
+      const ui = new UI();
+      ui.initialize();
+    </script>
+  </body>
+</html>

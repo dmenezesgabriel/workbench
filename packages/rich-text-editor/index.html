@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Simple WYSIWYG Editor</title>
+    <style>
+      .editor {
+        border: 1px solid #ccc;
+        min-height: 200px;
+        padding: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="editor" contenteditable="true"></div>
+
+    <button data-format="strong">Bold</button>
+    <button data-format="em">Italic</button>
+    <button data-format="u">Underline</button>
+
+    <script>
+      // Get the editor element
+      const editor = document.querySelector(".editor");
+
+      // Function to insert HTML at the current caret position
+      function insertHTML(html) {
+        // Get the current selection
+        const selection = window.getSelection();
+        if (selection.rangeCount > 0) {
+          // Get the current range
+          const range = selection.getRangeAt(0);
+          // Create a new element with the HTML
+          const tempEl = document.createElement("div");
+          tempEl.innerHTML = html;
+
+          // Clear the range contents
+          range.deleteContents();
+
+          // Insert the new element into the range
+          const frag = document.createDocumentFragment();
+          while (tempEl.firstChild) {
+            frag.appendChild(tempEl.firstChild);
+          }
+          range.insertNode(frag);
+        }
+      }
+
+      // Event listener for buttons to insert formatting
+      const buttons = document.querySelectorAll("button[data-format]");
+      buttons.forEach((button) => {
+        button.addEventListener("click", () => {
+          const format = button.getAttribute("data-format");
+          insertHTML(`<${format}>${window.getSelection()}</${format}>`);
+        });
+      });
+    </script>
+  </body>
+</html>
