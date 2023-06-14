@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <table>
+      <tr>
+        <td is="editable-table-cell" editable="true">Editable Cell</td>
+        <td is="editable-table-cell" editable="false">Non-Editable Cell</td>
+      </tr>
+    </table>
+    <script src="TableData.js"></script>
+    <script>
+      const editableTableCells = document.querySelectorAll(
+        'td[is="editable-table-cell"]'
+      );
+
+      editableTableCells.forEach((cell) => {
+        cell.addEventListener("cell-edited", (event) => {
+          const { oldValue, newValue } = event.detail;
+          console.log(
+            `Cell edited. Old value: ${oldValue}. New value: ${newValue}`
+          );
+        });
+      });
+    </script>
+  </body>
+</html>
