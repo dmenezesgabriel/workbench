@@ -4,13 +4,26 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
+    <style>
+      td {
+        color: blue;
+      }
+    </style>
   </head>
   <body>
     <table>
-      <tr>
-        <td is="editable-table-cell" editable="true">Editable Cell</td>
-        <td is="editable-table-cell" editable="false">Non-Editable Cell</td>
-      </tr>
+      <thead>
+        <tr>
+          <th>Column 1</th>
+          <th>Column 2</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td is="editable-table-cell" editable="true">Editable Cell</td>
+          <td is="editable-table-cell" editable="false">Non-Editable Cell</td>
+        </tr>
+      </tbody>
     </table>
     <script src="TableData.js"></script>
     <script>
