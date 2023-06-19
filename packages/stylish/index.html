@@ -2,154 +2,67 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>CSS Style Sheet Showcase</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Responsive Table</title>
     <link rel="stylesheet" href="style.css" />
-    <style>
-      /* Additional styling for showcase purposes */
-      body {
-        background-color: var(--dracula-bg);
-        color: var(--dracula-fg);
-        padding: 20px;
-      }
-
-      h1 {
-        font-family: "Press Start 2P", cursive;
-        text-transform: uppercase;
-        margin-bottom: 20px;
-      }
-
-      .showcase-section {
-        margin-bottom: 40px;
-      }
-
-      .showcase-section h2 {
-        font-family: "Press Start 2P", cursive;
-        text-transform: uppercase;
-        margin-bottom: 10px;
-      }
-
-      .showcase-element {
-        margin-bottom: 20px;
-      }
-    </style>
+    <script src="script.js" defer></script>
   </head>
-
   <body>
-    <h1>CSS Style Sheet Showcase</h1>
-
-    <div class="showcase-section">
-      <h2>Buttons</h2>
-      <div class="showcase-element">
-        <button class="button">Button</button>
-        <button class="button primary">Primary</button>
-        <button class="button secondary">Secondary</button>
-        <button class="button success">Success</button>
-        <button class="button danger">Danger</button>
-        <button class="button warning">Warning</button>
+    <main>
+      <section id="responsive-table">
+        <div class="table-wrapper">
+          <h1>Responsive Table</h1>
+          <table>
+            <caption>
+              The last 14 world F1 Champions
+            </caption>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Poles</th>
+                <th>Podiums</th>
+                <th>Wins</th>
+                <th>Career points</th>
+                <th>Championships</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td data-label="Name">Max Verstappen</td>
+                <td data-label="Poles">22</td>
+                <td data-label="Podiums">80</td>
+                <td data-label="Wins">37</td>
+                <td data-label="Career points">2080.5</td>
+                <td data-label="Championships">2</td>
+              </tr>
+              <tr>
+                <td data-label="Name">Lewis Hamilton</td>
+                <td data-label="Poles">103</td>
+                <td data-label="Podiums">192</td>
+                <td data-label="Wins">103</td>
+                <td data-label="Career points">4443.5</td>
+                <td data-label="Championships">7</td>
+              </tr>
+              <tr>
+                <td data-label="Name">Rico Rosberg</td>
+                <td data-label="Poles">30</td>
+                <td data-label="Podiums">57</td>
+                <td data-label="Wins">23</td>
+                <td data-label="Career points">1594.5</td>
+                <td data-label="Championships">1</td>
+              </tr>
+              <tr>
+                <td data-label="Name">Ayrton Senna</td>
+                <td data-label="Poles">65</td>
+                <td data-label="Podiums">80</td>
+                <td data-label="Wins">41</td>
+                <td data-label="Career points">610</td>
+                <td data-label="Championships">3</td>
+              </tr>
+            </tbody>
+          </table>
+      </section>>
       </div>
-    </div>
-
-    <div class="showcase-section">
-      <h2>Radio Buttons</h2>
-      <div class="showcase-element">
-        <label class="radio">
-          <input type="radio" name="radio-option" />
-          <span class="checkmark"></span>Option 1
-        </label>
-        <label class="radio">
-          <input type="radio" name="radio-option" />
-          <span class="checkmark"></span>Option 2
-        </label>
-        <label class="radio">
-          <input type="radio" name="radio-option" />
-          <span class="checkmark"></span>Option 3
-        </label>
-      </div>
-    </div>
-
-    <div class="showcase-section">
-      <h2>Checkboxes</h2>
-      <div class="showcase-element">
-        <label class="checkbox">
-          <input type="checkbox" />
-          <span class="checkmark"></span>Option 1
-        </label>
-        <label class="checkbox">
-          <input type="checkbox" />
-          <span class="checkmark"></span>Option 2
-        </label>
-        <label class="checkbox">
-          <input type="checkbox" />
-          <span class="checkmark"></span>Option 3
-        </label>
-      </div>
-    </div>
-
-    <div class="showcase-section">
-      <h2>Select</h2>
-      <div class="showcase-element">
-        <div class="select">
-          <select>
-            <option value="option1">Option 1</option>
-            <option value="option2">Option 2</option>
-            <option value="option3">Option 3</option>
-          </select>
-        </div>
-      </div>
-    </div>
-
-    <div class="showcase-section">
-      <h2>Textarea</h2>
-      <div class="showcase-element">
-        <textarea class="textarea" rows="4" cols="50"></textarea>
-      </div>
-    </div>
-
-    <div class="showcase-section">
-      <h2>List</h2>
-      <div class="showcase-element">
-        <ul class="list">
-          <li>List Item 1</li>
-          <li>List Item 2</li>
-          <li>List Item 3</li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="showcase-section">
-      <h2>Table</h2>
-      <div class="showcase-element">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Header 1</th>
-              <th>Header 2</th>
-              <th>Header 3</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Data 1</td>
-              <td>Data 2</td>
-              <td>Data 3</td>
-            </tr>
-            <tr>
-              <td>Data 4</td>
-              <td>Data 5</td>
-              <td>Data 6</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="showcase-section">
-      <h2>Progress</h2>
-      <div class="showcase-element">
-        <div class="progress">
-          <div class="progress-bar" style="width: 75%"></div>
-        </div>
-      </div>
-    </div>
+    </main>
   </body>
 </html>
