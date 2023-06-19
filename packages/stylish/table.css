@@ -65,7 +65,7 @@ tr:nth-of-type(2n) {
   }
 
   td::before {
-    content: attr(data-label) ": ";
+    content: attr(cell-label) ": ";
     font-weight: 700;
     text-transform: capitalize;
   }
