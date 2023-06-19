@@ -1,3 +1,25 @@
+html {
+  color-scheme: light dark;
+}
+
+body {
+  font-family: "system-ui";
+  font-size: 1.125rem;
+  line-height: 1.6;
+}
+
+img,
+picture,
+svg {
+  max-width: 100%;
+  display: block;
+}
+
+main {
+  width: min(65ch, 100% - 3rem);
+  margin-inline: auto;
+}
+
 iframe {
   width: 100%;
 }
