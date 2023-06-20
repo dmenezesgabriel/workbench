@@ -1,0 +1,7 @@
+@import "../iframe.css";
+@import "gradient-border.css";
+
+body {
+  display: grid;
+  place-items: center;
+}
