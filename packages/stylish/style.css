@@ -20,6 +20,12 @@ main {
   margin-inline: auto;
 }
 
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
 iframe {
   width: 100%;
 }
