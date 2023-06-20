@@ -1,0 +1,19 @@
+.contact-form {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.form-group {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.form-group--full-width {
+  grid-column: 1 / -1;
+}
+
+@media (min-width: 35em) {
+  .contact-form {
+    grid-template-columns: 1fr 1fr;
+  }
+}
