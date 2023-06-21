@@ -2,7 +2,6 @@ class TypewriterParagraph extends HTMLParagraphElement {
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
-    this.style.setProperty("animation", "cursor-blink 1s infinite");
     this.style.setProperty("animation", "typewriter 1s steps(40) infinite");
     this.cursor = null;
     this.observer = null;
@@ -16,8 +15,6 @@ class TypewriterParagraph extends HTMLParagraphElement {
 
   createCursor() {
     this.cursor = document.createElement("span");
-    this.cursor.innerText = "|";
-    this.cursor.style.animation = "cursor-blink 1s infinite";
     this.shadowRoot.appendChild(this.cursor);
   }
 
@@ -38,7 +35,6 @@ class TypewriterParagraph extends HTMLParagraphElement {
     const textNode = this.shadowRoot.firstChild;
     const text = this.text;
     let characters = [];
-
     let currentText = "";
     let forward = true;
 
@@ -46,6 +42,7 @@ class TypewriterParagraph extends HTMLParagraphElement {
       if (characters.length === 0) {
         characters = text.split("");
       }
+
       if (forward) {
         currentText += characters.shift();
         textNode.textContent = currentText;
