@@ -5,7 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dialog Web Component</title>
     <style>
-      /* Styling for the dialog */
+      dialog::backdrop {
+        background-color: rgba(0, 0, 0, 0.5);
+      }
+
       .dialog-container {
         display: flex;
         flex-direction: column;
@@ -14,7 +17,6 @@
         height: 100vh;
       }
 
-      /* Styling for the buttons */
       .button-container {
         margin-top: 16px;
         display: flex;
@@ -27,16 +29,21 @@
     </style>
   </head>
   <body>
-    <dialog id="my-dialog">
+    <dialog data-modal>
       <h2>Welcome to the Dialog!</h2>
       <p>This is a simple dialog example.</p>
-      <button id="close-dialog">Close</button>
+      <form>
+        <input type="text" />
+        <button type="submit" formmethod="dialog">Cancel</button>
+        <button type="submit">Submit</button>
+      </form>
+      <button data-close-modal>Close</button>
     </dialog>
 
     <div class="dialog-container">
       <h1>Dialog Web Component Example</h1>
-      <div class="button-container">
-        <button id="open-dialog">Open Dialog</button>
+      <div data-open-modal class="button-container">
+        <button>Open Dialog</button>
       </div>
     </div>
 
@@ -44,18 +51,30 @@
       // Define the dialog web component
 
       // Get references to the dialog and buttons
-      const dialog = document.getElementById("my-dialog");
-      const openDialogButton = document.getElementById("open-dialog");
-      const closeDialogButton = document.getElementById("close-dialog");
+      const modal = document.querySelector("[data-modal]");
+      const openDialogButton = document.querySelector("[data-open-modal]");
+      const closeDialogButton = document.querySelector("[data-close-modal]");
 
       // Open the dialog when the "Open Dialog" button is clicked
       openDialogButton.addEventListener("click", () => {
-        dialog.showModal();
+        modal.showModal();
       });
 
       // Close the dialog when the "Close" button inside the dialog is clicked
       closeDialogButton.addEventListener("click", () => {
-        dialog.close();
+        modal.close();
+      });
+
+      modal.addEventListener("click", (event) => {
+        const dialogDimensions = modal.getBoundingClientRect();
+        if (
+          event.clientX < dialogDimensions.left ||
+          event.clientX > dialogDimensions.right ||
+          event.clientY < dialogDimensions.top ||
+          event.clientY > dialogDimensions.bottom
+        ) {
+          modal.close();
+        }
       });
     </script>
   </body>
