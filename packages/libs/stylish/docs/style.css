@@ -1,0 +1,64 @@
+html {
+  color-scheme: light dark;
+}
+
+body {
+  font-family: "system-ui";
+  font-size: 1.125rem;
+  line-height: 1.6;
+}
+
+img,
+picture,
+svg {
+  max-width: 100%;
+  display: block;
+}
+
+.main-layout {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  grid-template-rows:
+    auto
+    1fr
+    auto;
+}
+
+main {
+  width: min(90ch, 100% - 3rem);
+  margin-inline: auto;
+}
+
+.primary-header {
+  display: grid;
+  grid-template-areas: "stack";
+  place-items: center;
+}
+
+.primary-header > * {
+  grid-area: stack;
+}
+
+.primary-header > img {
+  /* width: 100%; */
+}
+
+section {
+  counter-increment: section-counter;
+}
+
+section > h2::before {
+  opacity: 0.5;
+  content: counter(section-counter) ". ";
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+iframe {
+  width: 100%;
+}
