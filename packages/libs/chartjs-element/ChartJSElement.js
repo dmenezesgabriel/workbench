@@ -1,4 +1,6 @@
 import Chart from "chart.js/auto";
+import { getElementSize } from "./utils/resize";
+import { emitDataPoints } from "./utils/click";
 
 class HTMLChartJSElement extends HTMLElement {
   constructor() {
@@ -23,6 +25,17 @@ class HTMLChartJSElement extends HTMLElement {
     this.render();
   }
 
+  disconnectedCallback() {
+    this.destroyChart();
+  }
+
+  setCanvasSize() {
+    const parentElement = this.parentElement;
+    const { width, height } = getElementSize(parentElement);
+    this.canvas.width = width;
+    this.canvas.height = height;
+  }
+
   render() {
     const data = JSON.parse(this.getAttribute("data"));
     const options = JSON.parse(this.getAttribute("options"));
@@ -33,6 +46,8 @@ class HTMLChartJSElement extends HTMLElement {
       this.destroyChart();
     }
 
+    this.setCanvasSize();
+
     this.chart = new Chart(this.canvas, {
       type,
       data,
@@ -41,32 +56,7 @@ class HTMLChartJSElement extends HTMLElement {
     });
 
     if (this.canvas) {
-      this.canvas.onclick = (event) => {
-        const rect = this.canvas.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
-        const elements = this.chart.getElementsAtEventForMode(
-          event,
-          "nearest",
-          { intersect: true },
-          true
-        );
-        if (elements.length > 0 && this.chart) {
-          const datasetIndex = elements[0].datasetIndex;
-          const index = elements[0].index;
-          const label = JSON.parse(this.getAttribute("data")).labels[index];
-          const data = JSON.parse(this.getAttribute("data")).datasets[
-            datasetIndex
-          ].data[index];
-          const dataPoint = { label, data };
-          console.log(dataPoint);
-          this.dispatchEvent(
-            new CustomEvent("chart-click", {
-              detail: dataPoint,
-            })
-          );
-        }
-      };
+      this.canvas.onclick = emitDataPoints.bind(this);
     }
   }
 
