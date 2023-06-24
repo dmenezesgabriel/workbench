@@ -1,3 +1,5 @@
+import Chart from "chart.js/auto";
+
 class HTMLChartJSElement extends HTMLElement {
   constructor() {
     super();
