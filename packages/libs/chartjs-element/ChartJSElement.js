@@ -22,6 +22,9 @@ class HTMLChartJSElement extends HTMLElement {
   }
 
   connectedCallback() {
+    this.setCanvasSize();
+    window.addEventListener("resize", this.makeChart.bind(this));
+
     this.render();
   }
 
@@ -36,17 +39,17 @@ class HTMLChartJSElement extends HTMLElement {
     this.canvas.height = height;
   }
 
-  render() {
+  makeChart() {
     const data = JSON.parse(this.getAttribute("data"));
     const options = JSON.parse(this.getAttribute("options"));
     const plugins = JSON.parse(this.getAttribute("plugins"));
     const type = this.getAttribute("type");
 
+    this.setCanvasSize();
+
     if (this.chart) {
       this.destroyChart();
     }
-
-    this.setCanvasSize();
 
     this.chart = new Chart(this.canvas, {
       type,
@@ -58,6 +61,10 @@ class HTMLChartJSElement extends HTMLElement {
     if (this.canvas) {
       this.canvas.onclick = emitDataPoints.bind(this);
     }
+  }
+
+  render() {
+    this.makeChart();
   }
 
   destroyChart() {
