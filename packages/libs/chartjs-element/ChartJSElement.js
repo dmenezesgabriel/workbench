@@ -1,9 +1,9 @@
 import Chart from "chart.js/auto";
 import ChartDataLabels from "chartjs-plugin-datalabels";
+import { logDataPointPlugin } from "./plugins/customClickPlugin";
 import { getElementSize } from "./utils/resize";
-import { emitDataPoints } from "./utils/click";
 
-Chart.register(ChartDataLabels);
+Chart.register([ChartDataLabels, logDataPointPlugin]);
 
 class HTMLChartJSElement extends HTMLElement {
   constructor() {
@@ -60,10 +60,6 @@ class HTMLChartJSElement extends HTMLElement {
       options,
       plugins,
     });
-
-    if (this.canvas) {
-      this.canvas.onclick = emitDataPoints.bind(this);
-    }
   }
 
   render() {
