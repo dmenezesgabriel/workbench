@@ -12,6 +12,7 @@
     "vite": "^4.3.9"
   },
   "dependencies": {
-    "chart.js": "^4.3.0"
+    "chart.js": "^4.3.0",
+    "chartjs-plugin-datalabels": "^2.2.0"
   }
 }

@@ -1,6 +1,9 @@
 import Chart from "chart.js/auto";
+import ChartDataLabels from "chartjs-plugin-datalabels";
 import { getElementSize } from "./utils/resize";
 import { emitDataPoints } from "./utils/click";
+
+Chart.register(ChartDataLabels);
 
 class HTMLChartJSElement extends HTMLElement {
   constructor() {
