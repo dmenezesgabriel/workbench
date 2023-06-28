@@ -1,6 +1,6 @@
-const logDataPointPlugin = {
+const dispatchDataPointClickPlugin = {
   id: "customClickPlugin",
-  afterInit: function (chart, args, options) {
+  afterInit: function (chart) {
     chart.canvas.addEventListener("click", function (event) {
       if (chart.canvas) {
         const activePoints = chart.getElementsAtEventForMode(
@@ -24,7 +24,6 @@ const logDataPointPlugin = {
             },
           });
 
-          console.log(datasetLabel, dataValue);
           chart.canvas.dispatchEvent(dataPointEvent);
         }
       }
@@ -32,4 +31,4 @@ const logDataPointPlugin = {
   },
 };
 
-export { logDataPointPlugin };
+export { dispatchDataPointClickPlugin };
