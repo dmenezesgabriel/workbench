@@ -34,13 +34,15 @@ template.innerHTML = `
   </div>
 `;
 
-const chart = template.content.querySelector("chart-js");
-chart.setAttribute("data", data);
-chart.setAttribute("options", options);
+const cloneNode = template.content.cloneNode(true);
+const chart = cloneNode.querySelector("chart-js");
 
 chart.addEventListener("dataPointClicked", function (event) {
   const label = event.detail.label;
   const value = event.detail.value;
   console.log("Clicked Data Point:", label, value);
 });
-document.querySelector("#app").appendChild(template.content.cloneNode(true));
+
+chart.setAttribute("data", data);
+chart.setAttribute("options", options);
+document.querySelector("#app").appendChild(cloneNode);

@@ -27,7 +27,7 @@ class HTMLChartJSElement extends HTMLElement {
   connectedCallback() {
     this.resizeCanvas();
     window.addEventListener("resize", this.renderChart.bind(this));
-    this.chart.canvas?.addEventListener(
+    this.canvas.addEventListener(
       "dataPointClicked",
       this.emitDataPoint.bind(this)
     );
@@ -89,7 +89,6 @@ class HTMLChartJSElement extends HTMLElement {
       },
     });
     this.dispatchEvent(dataPointEvent);
-    console.log("dataPointClicked", event.detail);
   }
 }
 
