@@ -1,9 +1,9 @@
 import Chart from "chart.js/auto";
 import ChartDataLabels from "chartjs-plugin-datalabels";
-import { dispatchDataPointClickPlugin } from "./plugins/customClickPlugin";
 import { getElementSize } from "./utils/resize";
+import { emitDataPoints } from "./utils/click";
 
-Chart.register([ChartDataLabels, dispatchDataPointClickPlugin]);
+Chart.register([ChartDataLabels]);
 
 class HTMLChartJSElement extends HTMLElement {
   constructor() {
@@ -25,13 +25,8 @@ class HTMLChartJSElement extends HTMLElement {
   }
 
   connectedCallback() {
-    this.resizeCanvas();
     window.addEventListener("resize", this.renderChart.bind(this));
-    this.canvas.addEventListener(
-      "dataPointClicked",
-      this.emitDataPoint.bind(this)
-    );
-
+    this.canvas.addEventListener("click", emitDataPoints.bind(this));
     this.render();
   }
 
@@ -45,8 +40,11 @@ class HTMLChartJSElement extends HTMLElement {
 
   renderChart() {
     const { data, options, plugins, type } = this.parseAttributes();
+    const parentElement = this.parentElement;
+    const { width, height } = getElementSize(parentElement);
 
-    this.resizeCanvas();
+    this.canvas.width = width;
+    this.canvas.height = height;
 
     if (this.chart) {
       this.destroyChart();
@@ -70,25 +68,7 @@ class HTMLChartJSElement extends HTMLElement {
     const options = JSON.parse(this.getAttribute("options"));
     const plugins = JSON.parse(this.getAttribute("plugins"));
     const type = this.getAttribute("type");
-
     return { data, options, plugins, type };
-  }
-
-  resizeCanvas() {
-    const parentElement = this.parentElement;
-    const { width, height } = getElementSize(parentElement);
-    this.canvas.width = width;
-    this.canvas.height = height;
-  }
-
-  emitDataPoint(event) {
-    const dataPointEvent = new CustomEvent("dataPointClicked", {
-      detail: {
-        label: event.detail.label,
-        value: event.detail.value,
-      },
-    });
-    this.dispatchEvent(dataPointEvent);
   }
 }
 

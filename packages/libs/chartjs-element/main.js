@@ -36,6 +36,8 @@ template.innerHTML = `
 
 const cloneNode = template.content.cloneNode(true);
 const chart = cloneNode.querySelector("chart-js");
+chart.setAttribute("data", data);
+chart.setAttribute("options", options);
 
 chart.addEventListener("dataPointClicked", function (event) {
   const label = event.detail.label;
@@ -43,6 +45,4 @@ chart.addEventListener("dataPointClicked", function (event) {
   console.log("Clicked Data Point:", label, value);
 });
 
-chart.setAttribute("data", data);
-chart.setAttribute("options", options);
 document.querySelector("#app").appendChild(cloneNode);
