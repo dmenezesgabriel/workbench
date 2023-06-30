@@ -1,4 +1,4 @@
-import "./style.css";
+import "../src/assets/css/style.css";
 import "./ChartJSElement";
 
 const data = JSON.stringify({
@@ -45,4 +45,4 @@ chart.addEventListener("dataPointClicked", function (event) {
   console.log("Clicked Data Point:", label, value);
 });
 
-document.querySelector("#app").appendChild(cloneNode);
+document.querySelector("#app")?.appendChild(cloneNode);
