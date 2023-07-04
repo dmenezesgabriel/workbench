@@ -67,6 +67,7 @@ class HTMLChartJSElement extends HTMLElement {
     /** @type {ChartAttributes} */
     const { data, options, plugins, type } = this.parseAttributes();
     const parentElement = this.parentElement;
+    if (!parentElement) return;
     const { width, height } = getElementSize(parentElement);
 
     this.canvas.width = width;
@@ -106,3 +107,5 @@ class HTMLChartJSElement extends HTMLElement {
 }
 
 customElements.define("chart-js", HTMLChartJSElement);
+
+export { HTMLChartJSElement };

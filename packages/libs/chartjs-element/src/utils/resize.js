@@ -1,3 +1,9 @@
+/**
+ * Returns the size of an HTML element.
+ *
+ * @param {HTMLElement} element - The element to get the size of.
+ * @returns {{width: number, height: number}} - The size of the element.
+ */
 function getElementSize(element) {
   const computedStyle = getComputedStyle(element);
   const paddingLeft = parseFloat(computedStyle.paddingLeft);
