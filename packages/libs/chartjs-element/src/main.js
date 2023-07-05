@@ -1,4 +1,5 @@
 import "../src/assets/css/style.css";
+import "./chart";
 
 const data = JSON.stringify({
   labels: ["January", "February", "March", "April", "May", "June", "July"],

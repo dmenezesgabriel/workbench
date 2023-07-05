@@ -1,5 +1,5 @@
 /**
- * @typedef {import("../ChartJSElement").HTMLChartJSElement} HTMLChartJSElement
+ * @typedef {import("../chart").HTMLChartJSElement} HTMLChartJSElement
  */
 
 /**
