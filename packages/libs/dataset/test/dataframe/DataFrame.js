@@ -223,7 +223,6 @@ describe("DataFrame GroupBy", () => {
     const grouped = df.groupBy(["category"]).agg({
       value: "quartile",
     });
-
     assert.deepStrictEqual(grouped.toArray(), [
       {
         category: "A",
