@@ -1,7 +1,11 @@
 class DataFrame {
   constructor(data) {
-    this.data = data;
-    this.columns = Object.keys(data[0]);
+    this._data = data;
+    this.columns = Object.keys(this._data[0]);
+  }
+
+  toArray() {
+    return this._data;
   }
 
   asType(convertObject) {
@@ -28,7 +32,7 @@ class DataFrame {
       }
     }
 
-    for (const row of this.data) {
+    for (const row of this._data) {
       const convertedRow = {};
       for (const [key, value] of Object.entries(row)) {
         if (convertMap[key]) {
@@ -44,11 +48,11 @@ class DataFrame {
   }
 
   groupBy(properties) {
-    return new GroupedDataFrame(this.data, properties);
+    return new GroupedDataFrame(this._data, properties);
   }
 
   rollingSum(partitionBy, orderBy, valueColumn, windowSize) {
-    const sortedData = this.data.slice().sort((a, b) => {
+    const sortedData = this._data.slice().sort((a, b) => {
       for (let i = 0; i < orderBy.length; i++) {
         const orderProp = orderBy[i];
         if (a[orderProp] < b[orderProp]) {
@@ -87,7 +91,7 @@ class DataFrame {
     const columnValues = new Set();
 
     // Collect unique values for index and columns
-    this.data.forEach((row) => {
+    this._data.forEach((row) => {
       indexValues.add(row[index]);
       columnValues.add(row[columns]);
     });
@@ -101,7 +105,7 @@ class DataFrame {
     });
 
     // Perform aggregation
-    this.data.forEach((row) => {
+    this._data.forEach((row) => {
       const indexValue = row[index];
       const columnValue = row[columns];
       result[indexValue][columnValue] += row[values];
@@ -117,17 +121,17 @@ class DataFrame {
       pivotTable.push(rowData);
     });
 
-    return pivotTable;
+    return new DataFrame(pivotTable);
   }
 
   select(...cols) {
     const selectedData = [];
-    for (let i = 0; i < this.data.length; i++) {
-      const row = this.data[i];
+    for (let i = 0; i < this._data.length; i++) {
+      const row = this._data[i];
       const selectedRow = {};
       for (let j = 0; j < cols.length; j++) {
         const col = cols[j];
-        if (row.hasOwnProperty.call(col)) {
+        if (row.hasOwnProperty(col)) {
           selectedRow[col] = row[col];
         }
       }
@@ -138,8 +142,8 @@ class DataFrame {
   }
 
   *[Symbol.iterator]() {
-    for (let i = 0; i < this.data.length; i++) {
-      yield this.data[i];
+    for (let i = 0; i < this._data.length; i++) {
+      yield this._data[i];
     }
   }
 
@@ -154,7 +158,7 @@ class DataFrame {
   }
 
   sort(col, ascending = true) {
-    const sortedData = this.data.slice().sort((a, b) => {
+    const sortedData = this._data.slice().sort((a, b) => {
       if (a[col] < b[col]) return ascending ? -1 : 1;
       if (a[col] > b[col]) return ascending ? 1 : -1;
       return 0;
@@ -163,23 +167,24 @@ class DataFrame {
   }
 
   count() {
-    return this.data.length;
+    return this._data.length;
   }
 
   head(numLines = 5) {
-    const linesToShow = this.data.slice(0, numLines);
+    const linesToShow = this._data.slice(0, numLines);
     console.table(linesToShow);
+    return new DataFrame(linesToShow);
   }
 
   tail(numLines = 5) {
-    const linesToShow = this.data.slice(-numLines);
+    const linesToShow = this._data.slice(-numLines);
     console.table(linesToShow);
   }
 
   unique(property) {
     const uniqueValues = new Set();
-    for (let i = 0, len = this.data.length; i < len; i++) {
-      const value = this.data[i][property];
+    for (let i = 0, len = this._data.length; i < len; i++) {
+      const value = this._data[i][property];
       uniqueValues.add(value);
     }
     return Array.from(uniqueValues);
@@ -189,8 +194,8 @@ class DataFrame {
     const renamedData = [];
     const columnKeys = Object.keys(columns);
 
-    for (let i = 0; i < this.data.length; i++) {
-      const row = this.data[i];
+    for (let i = 0; i < this._data.length; i++) {
+      const row = this._data[i];
       const renamedRow = {};
 
       for (let j = 0; j < columnKeys.length; j++) {
@@ -214,8 +219,8 @@ class DataFrame {
   }
   merge(otherDataFrame, on, how = "inner") {
     const mergedData = [];
-    const selfData = this.data;
-    const otherData = otherDataFrame.data;
+    const selfData = this._data;
+    const otherData = otherDataFrame._data;
 
     const mergeColumns = Array.isArray(on) ? on : [on];
 
@@ -346,12 +351,12 @@ class DataFrame {
 
 class GroupedDataFrame {
   constructor(data, properties) {
-    this.data = data;
+    this._data = data;
     this.properties = properties;
   }
 
   agg(aggregations) {
-    const groupedData = groupData(this.data, this.properties);
+    const groupedData = groupData(this._data, this.properties);
     const aggregatedData = aggregateData(groupedData, aggregations);
     return new DataFrame(aggregatedData);
   }
@@ -408,142 +413,4 @@ function calculateQuartile(values, percentile) {
   return lowerValue + (upperValue - lowerValue) * interpolation;
 }
 
-// Examples //
-// Example usage
-let data = [
-  { property1: "A", property2: "Y", property3: 10, property4: 5 },
-  { property1: "A", property2: "Y", property3: 20, property4: 8 },
-  { property1: "B", property2: "X", property3: 15, property4: 6 },
-  { property1: "B", property2: "X", property3: 25, property4: 7 },
-];
-
-let df = new DataFrame(data);
-let grouped = df.groupBy(["property1", "property2"]).agg({
-  property3: "sum",
-  property4: "avg",
-});
-
-console.log(grouped.data);
-
-data = [
-  { Date: "2021-01-01", Category: "A", Value: 10 },
-  { Date: "2021-01-02", Category: "A", Value: 20 },
-  { Date: "2021-01-03", Category: "A", Value: 15 },
-  { Date: "2021-01-01", Category: "B", Value: 5 },
-  { Date: "2021-01-02", Category: "B", Value: 8 },
-  { Date: "2021-01-03", Category: "B", Value: 12 },
-  { Date: "2021-01-03", Category: "B", Value: 14 },
-];
-
-df = new DataFrame(data);
-const rolledData = df.rollingSum(["Category"], ["Date"], "Value", 2);
-console.log(rolledData.data);
-
-// Example usage
-data = [
-  { Country: "USA", Year: 2019, Sales: 1000 },
-  { Country: "USA", Year: 2020, Sales: 1200 },
-  { Country: "USA", Year: 2021, Sales: 1500 },
-  { Country: "Canada", Year: 2019, Sales: 800 },
-  { Country: "Canada", Year: 2020, Sales: 900 },
-  { Country: "Canada", Year: 2021, Sales: 1100 },
-];
-
-df = new DataFrame(data);
-const pivotTable = df.pivot("Country", "Year", "Sales");
-console.log(pivotTable);
-
-// Sample data
-data = [
-  { name: "John", age: 30, city: "New York" },
-  { name: "Alice", age: 25, city: "London" },
-  { name: "Bob", age: 35, city: "Paris" },
-  { name: "Alice", age: 28, city: "San Francisco" },
-  // ... More data
-];
-
-// Create a DataFrame instance
-df = new DataFrame(data);
-
-df.head(4); // Show first 5 rows
-
-console.log(df.select("name", "age"));
-
-// Get unique values for the "name" property
-const uniqueNames = df.unique("name");
-console.log(uniqueNames);
-
-// Filter the data where age is greater than 25
-const filteredData = df.filter((row) => row.age > 25);
-console.log(filteredData.data);
-
-data = [
-  { columnA: "John", columnB: "25", columnC: "1990-01-01" },
-  { columnA: "Alice", columnB: "30", columnC: "1985-06-12" },
-  { columnA: "Bob", columnB: "40", columnC: "1979-03-22" },
-];
-
-const convertObject = {
-  columnA: "string",
-  columnB: "number",
-  columnC: {
-    type: "Date",
-    options: { format: { year: "numeric", month: "long", day: "numeric" } },
-  },
-};
-
-df = new DataFrame(data);
-const convertedDf = df.asType(convertObject);
-
-console.log(convertedDf.data);
-
-// Example usage
-data = [
-  { A: 1, B: 2 },
-  { A: 3, B: 4 },
-  // ... large object array
-];
-
-df = new DataFrame(data);
-const renamedDf = df.rename({ A: "a", B: "c" });
-
-console.log(df.data);
-console.log(renamedDf.data);
-
-const data1 = [
-  { id: 1, name: "John" },
-  { id: 2, name: "Jane" },
-  { id: 3, name: "Bob" },
-];
-
-const data2 = [
-  { id: 1, age: 25 },
-  { id: 2, age: 30, name: "Jane" },
-];
-
-const df1 = new DataFrame(data1);
-const df2 = new DataFrame(data2);
-
-// Merge based on a single column name
-const mergedDf1 = df1.merge(df2, "id", "left");
-console.log(mergedDf1.data);
-
-// Merge based on a list of column names
-const mergedDf2 = df1.merge(df2, ["id", "name"]);
-console.log(mergedDf2.data);
-
-data = [
-  { category: "A", value: 10 },
-  { category: "A", value: 15 },
-  { category: "B", value: 20 },
-  { category: "B", value: 25 },
-  { category: "B", value: 30 },
-  { category: "C", value: 35 },
-];
-
-df = new DataFrame(data);
-grouped = df.groupBy(["category"]).agg({
-  value: "quartile",
-});
-
-console.log(grouped.data);
+export { DataFrame };

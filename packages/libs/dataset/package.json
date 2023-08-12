@@ -1,0 +1,14 @@
+{
+  "name": "dataset",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "node --test test/",
+    "test:watch": "node --watch --test test/"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
