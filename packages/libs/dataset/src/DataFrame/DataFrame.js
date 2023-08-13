@@ -1,4 +1,11 @@
 import { Cast } from "./Cast.js";
+import { Rolling } from "./Rolling.js";
+import { Pivot } from "./Pivot.js";
+import { Select } from "./Select.js";
+import { Filter } from "./Filter.js";
+import { Unique } from "./Unique.js";
+import { Merge } from "./Merge.js";
+import { Rename } from "./Rename.js";
 
 class DataFrame {
   constructor(data) {
@@ -20,93 +27,20 @@ class DataFrame {
   }
 
   rollingSum(partitionBy, orderBy, valueColumn, windowSize) {
-    const sortedData = this._data.slice().sort((a, b) => {
-      for (let i = 0; i < orderBy.length; i++) {
-        const orderProp = orderBy[i];
-        if (a[orderProp] < b[orderProp]) {
-          return -1;
-        }
-        if (a[orderProp] > b[orderProp]) {
-          return 1;
-        }
-      }
-      return 0;
-    });
-
-    const rolledData = sortedData.map((row, index) => {
-      const startIdx = Math.max(0, index - windowSize + 1);
-      const endIdx = index + 1;
-      const partitionData = sortedData.slice(startIdx, endIdx).filter((r) => {
-        for (let i = 0; i < partitionBy.length; i++) {
-          const prop = partitionBy[i];
-          if (r[prop] !== row[prop]) {
-            return false;
-          }
-        }
-        return true;
-      });
-
-      const sum = partitionData.reduce((acc, r) => acc + r[valueColumn], 0);
-      return { ...row, [`${valueColumn}_rollingSum`]: sum };
-    });
-
-    return new DataFrame(rolledData);
+    const rolling = new Rolling(this._data);
+    return new DataFrame(
+      rolling.rollingSum(partitionBy, orderBy, valueColumn, windowSize)
+    );
   }
 
   pivot(index, columns, values) {
-    const result = {};
-    const indexValues = new Set();
-    const columnValues = new Set();
-
-    // Collect unique values for index and columns
-    this._data.forEach((row) => {
-      indexValues.add(row[index]);
-      columnValues.add(row[columns]);
-    });
-
-    // Initialize result object
-    indexValues.forEach((iv) => {
-      result[iv] = {};
-      columnValues.forEach((cv) => {
-        result[iv][cv] = 0;
-      });
-    });
-
-    // Perform aggregation
-    this._data.forEach((row) => {
-      const indexValue = row[index];
-      const columnValue = row[columns];
-      result[indexValue][columnValue] += row[values];
-    });
-
-    // Convert result to array of objects
-    const pivotTable = [];
-    indexValues.forEach((iv) => {
-      const rowData = { [index]: iv };
-      columnValues.forEach((cv) => {
-        rowData[cv] = result[iv][cv];
-      });
-      pivotTable.push(rowData);
-    });
-
-    return new DataFrame(pivotTable);
+    const pivot = new Pivot(this._data);
+    return new DataFrame(pivot.pivot(index, columns, values));
   }
 
   select(...cols) {
-    const selectedData = [];
-    for (let i = 0; i < this._data.length; i++) {
-      const row = this._data[i];
-      const selectedRow = {};
-      for (let j = 0; j < cols.length; j++) {
-        const col = cols[j];
-        if (row.hasOwnProperty(col)) {
-          selectedRow[col] = row[col];
-        }
-      }
-      selectedData.push(selectedRow);
-    }
-
-    return new DataFrame(selectedData);
+    const select = new Select(this._data);
+    return new DataFrame(select.select(...cols));
   }
 
   *[Symbol.iterator]() {
@@ -116,13 +50,8 @@ class DataFrame {
   }
 
   filter(condition) {
-    const filteredData = [];
-    for (const row of this) {
-      if (condition(row)) {
-        filteredData.push(row);
-      }
-    }
-    return new DataFrame(filteredData);
+    const filter = new Filter(this._data);
+    return new DataFrame(filter.filter(condition));
   }
 
   sort(col, ascending = true) {
@@ -147,173 +76,21 @@ class DataFrame {
   tail(numLines = 5) {
     const linesToShow = this._data.slice(-numLines);
     console.table(linesToShow);
+    return new DataFrame(linesToShow);
   }
 
   unique(property) {
-    const uniqueValues = new Set();
-    for (let i = 0, len = this._data.length; i < len; i++) {
-      const value = this._data[i][property];
-      uniqueValues.add(value);
-    }
-    return Array.from(uniqueValues);
+    return new Unique(this._data).unique(property);
   }
 
   rename(columns) {
-    const renamedData = [];
-    const columnKeys = Object.keys(columns);
-
-    for (let i = 0; i < this._data.length; i++) {
-      const row = this._data[i];
-      const renamedRow = {};
-
-      for (let j = 0; j < columnKeys.length; j++) {
-        const prop = columnKeys[j];
-
-        if (Object.prototype.hasOwnProperty.call(row, prop)) {
-          renamedRow[columns[prop]] = row[prop];
-        }
-      }
-
-      for (let prop in row) {
-        if (!Object.prototype.hasOwnProperty.call(columns, prop)) {
-          renamedRow[prop] = row[prop];
-        }
-      }
-
-      renamedData.push(renamedRow);
-    }
-
-    return new DataFrame(renamedData);
+    const rename = new Rename(this._data);
+    return new DataFrame(rename.rename(columns));
   }
+
   merge(otherDataFrame, on, how = "inner") {
-    const mergedData = [];
-    const selfData = this._data;
-    const otherData = otherDataFrame._data;
-
-    const mergeColumns = Array.isArray(on) ? on : [on];
-
-    for (let i = 0; i < selfData.length; i++) {
-      const selfRow = selfData[i];
-
-      for (let j = 0; j < otherData.length; j++) {
-        const otherRow = otherData[j];
-
-        let isMatched = true;
-        for (let k = 0; k < mergeColumns.length; k++) {
-          const mergeColumn = mergeColumns[k];
-          if (selfRow[mergeColumn] !== otherRow[mergeColumn]) {
-            isMatched = false;
-            break;
-          }
-        }
-
-        if (isMatched) {
-          const mergedRow = { ...selfRow, ...otherRow };
-          mergedData.push(mergedRow);
-        }
-      }
-    }
-
-    if (mergedData.length === 0) {
-      return new DataFrame([{}]); // Return an empty DataFrame if no matches found
-    }
-
-    if (how === "left") {
-      const leftData = selfData
-        .map((selfRow) => {
-          let matchedOtherRows = otherData.filter((otherRow) => {
-            let isMatched = true;
-            for (let k = 0; k < mergeColumns.length; k++) {
-              const mergeColumn = mergeColumns[k];
-              if (selfRow[mergeColumn] !== otherRow[mergeColumn]) {
-                isMatched = false;
-                break;
-              }
-            }
-            return isMatched;
-          });
-          if (matchedOtherRows.length > 0) {
-            return matchedOtherRows.map((otherRow) => {
-              return { ...selfRow, ...otherRow };
-            });
-          } else {
-            return selfRow;
-          }
-        })
-        .flat();
-      return new DataFrame(leftData);
-    }
-
-    if (how === "right") {
-      const rightData = otherData
-        .map((otherRow) => {
-          let matchedSelfRows = selfData.filter((selfRow) => {
-            let isMatched = true;
-            for (let k = 0; k < mergeColumns.length; k++) {
-              const mergeColumn = mergeColumns[k];
-              if (selfRow[mergeColumn] !== otherRow[mergeColumn]) {
-                isMatched = false;
-                break;
-              }
-            }
-            return isMatched;
-          });
-          if (matchedSelfRows.length > 0) {
-            return matchedSelfRows.map((selfRow) => {
-              return { ...selfRow, ...otherRow };
-            });
-          } else {
-            return otherRow;
-          }
-        })
-        .flat();
-      return new DataFrame(rightData);
-    }
-
-    if (how === "outer") {
-      const outerData = [];
-      for (let i = 0; i < selfData.length; i++) {
-        const selfRow = selfData[i];
-        let matchedOtherRows = otherData.filter((otherRow) => {
-          let isMatched = true;
-          for (let k = 0; k < mergeColumns.length; k++) {
-            const mergeColumn = mergeColumns[k];
-            if (selfRow[mergeColumn] !== otherRow[mergeColumn]) {
-              isMatched = false;
-              break;
-            }
-          }
-          return isMatched;
-        });
-        if (matchedOtherRows.length > 0) {
-          matchedOtherRows.forEach((otherRow) => {
-            outerData.push({ ...selfRow, ...otherRow });
-          });
-        } else {
-          outerData.push(selfRow);
-        }
-      }
-      for (let j = 0; j < otherData.length; j++) {
-        const otherRow = otherData[j];
-        let matchedSelfRows = selfData.filter((selfRow) => {
-          let isMatched = true;
-          for (let k = 0; k < mergeColumns.length; k++) {
-            const mergeColumn = mergeColumns[k];
-            if (selfRow[mergeColumn] !== otherRow[mergeColumn]) {
-              isMatched = false;
-              break;
-            }
-          }
-          return isMatched;
-        });
-        if (matchedSelfRows.length === 0) {
-          outerData.push(otherRow);
-        }
-      }
-      return new DataFrame(outerData);
-    }
-
-    return new DataFrame(mergedData);
+    const merge = new Merge(this._data);
+    return new DataFrame(merge.merge(otherDataFrame, on, how));
   }
 }
 
