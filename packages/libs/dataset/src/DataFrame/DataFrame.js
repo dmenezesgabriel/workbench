@@ -6,6 +6,7 @@ import { Filter } from "./Filter.js";
 import { Unique } from "./Unique.js";
 import { Merge } from "./Merge.js";
 import { Rename } from "./Rename.js";
+import { aggregateData } from "../utils/mathOperations.js";
 
 class DataFrame {
   constructor(data) {
@@ -20,10 +21,6 @@ class DataFrame {
   asType(convertObject) {
     const cast = new Cast(this._data);
     return new DataFrame(cast.asType(convertObject));
-  }
-
-  groupBy(properties) {
-    return new GroupedDataFrame(this._data, properties);
   }
 
   rollingSum(partitionBy, orderBy, valueColumn, windowSize) {
@@ -92,70 +89,36 @@ class DataFrame {
     const merge = new Merge(this._data);
     return new DataFrame(merge.merge(otherDataFrame, on, how));
   }
+
+  groupBy(properties) {
+    return new DataFrameGroupBy(this._data, properties);
+  }
 }
 
-class GroupedDataFrame {
+class DataFrameGroupBy {
   constructor(data, properties) {
     this._data = data;
     this.properties = properties;
   }
 
+  groupData() {
+    return this._data.reduce((groups, row) => {
+      const groupKey = this.properties
+        .map((property) => row[property])
+        .join("-");
+      if (!groups[groupKey]) {
+        groups[groupKey] = [];
+      }
+      groups[groupKey].push(row);
+      return groups;
+    }, {});
+  }
+
   agg(aggregations) {
-    const groupedData = groupData(this._data, this.properties);
+    const groupedData = this.groupData(this._data, this.properties);
     const aggregatedData = aggregateData(groupedData, aggregations);
     return new DataFrame(aggregatedData);
   }
-}
-
-// Helper function to group data based on specified properties
-function groupData(data, properties) {
-  return data.reduce((groups, row) => {
-    const groupKey = properties.map((property) => row[property]).join("-");
-    if (!groups[groupKey]) {
-      groups[groupKey] = [];
-    }
-    groups[groupKey].push(row);
-    return groups;
-  }, {});
-}
-
-// Helper function to aggregate grouped data
-function aggregateData(groupedData, aggregations) {
-  return Object.entries(groupedData).map(([groupKey, groupData]) => {
-    const aggregatedRow = { ...groupData[0] };
-    Object.entries(aggregations).forEach(([property, aggregator]) => {
-      if (aggregator === "sum") {
-        aggregatedRow[property] = groupData.reduce(
-          (sum, row) => sum + row[property],
-          0
-        );
-      } else if (aggregator === "avg") {
-        const sum = groupData.reduce((sum, row) => sum + row[property], 0);
-        aggregatedRow[property] = sum / groupData.length;
-      } else if (aggregator === "quartile") {
-        const values = groupData
-          .map((row) => row[property])
-          .sort((a, b) => a - b);
-        const q1 = calculateQuartile(values, 0.25);
-        const q2 = calculateQuartile(values, 0.5);
-        const q3 = calculateQuartile(values, 0.75);
-        aggregatedRow[`${property}_q1`] = q1;
-        aggregatedRow[`${property}_q2`] = q2;
-        aggregatedRow[`${property}_q3`] = q3;
-      }
-    });
-    return aggregatedRow;
-  });
-}
-
-function calculateQuartile(values, percentile) {
-  const index = (values.length - 1) * percentile;
-  const lower = Math.floor(index);
-  const upper = Math.ceil(index);
-  const interpolation = index % 1;
-  const lowerValue = values[lower];
-  const upperValue = values[upper];
-  return lowerValue + (upperValue - lowerValue) * interpolation;
 }
 
 export { DataFrame };
