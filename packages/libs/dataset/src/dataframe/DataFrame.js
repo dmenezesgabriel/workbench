@@ -74,23 +74,21 @@ class DataFrame {
     return new DataFrame(linesToShow);
   }
 
-  _getLinesToShow(numLines, startIndex) {
+  _validateNumLines(numLines) {
     if (!Number.isInteger(numLines)) {
       throw new TypeError("numLines argument must be an integer");
     }
-    if (numLines <= 0) {
-      return [];
-    }
-    return this._data.slice(startIndex, startIndex + numLines);
   }
 
   head(numLines = 5) {
-    const linesToShow = this._getLinesToShow(numLines, 0);
+    this._validateNumLines(numLines);
+    const linesToShow = numLines > 0 ? this._data.slice(0, numLines) : [];
     return this._showLines(linesToShow);
   }
 
   tail(numLines = 5) {
-    const linesToShow = this._getLinesToShow(numLines, -numLines);
+    this._validateNumLines(numLines);
+    const linesToShow = numLines > 0 ? this._data.slice(-numLines) : [];
     return this._showLines(linesToShow);
   }
 
