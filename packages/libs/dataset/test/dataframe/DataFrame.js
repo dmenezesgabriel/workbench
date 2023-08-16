@@ -50,6 +50,54 @@ describe("DataFrame head method", () => {
   });
 });
 
+describe("DataFrame tail method", () => {
+  let data;
+  beforeEach(() => {
+    data = [
+      { name: "John", age: 30, city: "New York" },
+      { name: "Alice", age: 25, city: "London" },
+      { name: "Bob", age: 35, city: "Paris" },
+      { name: "Alice", age: 28, city: "San Francisco" },
+      { name: "John", age: 20, city: "Berlin" },
+      { name: "Ram", age: 25, city: "London" },
+      { name: "Tom", age: 35, city: "Paris" },
+      { name: "Yan", age: 28, city: "San Francisco" },
+    ];
+  });
+
+  it("returns last 5 as default", () => {
+    const df = new DataFrame(data);
+    assert.deepStrictEqual(df.tail().toArray(), data.slice(-5));
+  });
+
+  it("returns last 3 rows when receive number 3 as argument", () => {
+    const df = new DataFrame(data);
+    assert.deepStrictEqual(df.tail(3).toArray(), data.slice(-3));
+  });
+
+  it("returns the entire DataFrame when receive a number greater than the number of rows", () => {
+    const df = new DataFrame(data);
+    assert.deepStrictEqual(df.tail(100).toArray(), data);
+  });
+
+  it("returns an empty DataFrame when receive 0 as argument", () => {
+    const df = new DataFrame(data);
+    assert.deepStrictEqual(df.tail(0).toArray(), []);
+  });
+
+  it("returns an empty DataFrame when receive a negative number as argument", () => {
+    const df = new DataFrame(data);
+    assert.deepStrictEqual(df.tail(-1).toArray(), []);
+  });
+
+  it("throws an error if n is not an integer", () => {
+    const df = new DataFrame(data);
+    assert.throws(() => {
+      df.tail("a");
+    }, TypeError);
+  });
+});
+
 describe("DataFrame methods", () => {
   it("should return unique values for a column", () => {
     const data = [
