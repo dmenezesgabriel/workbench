@@ -1,25 +1,56 @@
-import { describe, it } from "node:test";
+import { describe, it, beforeEach } from "node:test";
 import assert from "node:assert";
 import { DataFrame } from "../../src/dataframe/DataFrame.js";
 
-describe("DataFrame methods", () => {
-  it("should return first 3 rows", () => {
-    const data = [
+describe("DataFrame head method", () => {
+  let data;
+  beforeEach(() => {
+    data = [
       { name: "John", age: 30, city: "New York" },
       { name: "Alice", age: 25, city: "London" },
       { name: "Bob", age: 35, city: "Paris" },
       { name: "Alice", age: 28, city: "San Francisco" },
+      { name: "John", age: 20, city: "Berlin" },
+      { name: "Ram", age: 25, city: "London" },
+      { name: "Tom", age: 35, city: "Paris" },
+      { name: "Yan", age: 28, city: "San Francisco" },
     ];
-
-    const df = new DataFrame(data);
-
-    assert.deepStrictEqual(df.head(3).toArray(), [
-      { name: "John", age: 30, city: "New York" },
-      { name: "Alice", age: 25, city: "London" },
-      { name: "Bob", age: 35, city: "Paris" },
-    ]);
   });
 
+  it("returns first 5 as default", () => {
+    const df = new DataFrame(data);
+    assert.deepStrictEqual(df.head().toArray(), data.slice(0, 5));
+  });
+
+  it("returns first 3 rows when receive number 3 as argument", () => {
+    const df = new DataFrame(data);
+    assert.deepStrictEqual(df.head(3).toArray(), data.slice(0, 3));
+  });
+
+  it("returns the entire DataFrame when receive a number greater than the number of rows", () => {
+    const df = new DataFrame(data);
+    assert.deepStrictEqual(df.head(100).toArray(), data);
+  });
+
+  it("returns an empty DataFrame when receive 0 as argument", () => {
+    const df = new DataFrame(data);
+    assert.deepStrictEqual(df.head(0).toArray(), []);
+  });
+
+  it("returns an empty DataFrame when receive a negative number as argument", () => {
+    const df = new DataFrame(data);
+    assert.deepStrictEqual(df.head(-1).toArray(), []);
+  });
+
+  it("throws an error if n is not an integer", () => {
+    const df = new DataFrame(data);
+    assert.throws(() => {
+      df.head("a");
+    }, TypeError);
+  });
+});
+
+describe("DataFrame methods", () => {
   it("should return unique values for a column", () => {
     const data = [
       { name: "John", age: 30, city: "New York" },

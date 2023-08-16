@@ -7,11 +7,16 @@ import { Unique } from "./Unique.js";
 import { Merge } from "./Merge.js";
 import { Rename } from "./Rename.js";
 import { aggregateData } from "../utils/mathOperations.js";
+import { Series } from "./Series.js";
 
 class DataFrame {
   constructor(data) {
-    this._data = data;
-    this.columns = Object.keys(this._data[0]);
+    this._data = data || [];
+    this.columns = Object.keys(this._data?.[0] || {});
+
+    for (const column of this.columns) {
+      this[column] = new Series(this._data.map((item) => item[column]));
+    }
   }
 
   toArray() {
@@ -64,16 +69,29 @@ class DataFrame {
     return this._data.length;
   }
 
-  head(numLines = 5) {
-    const linesToShow = this._data.slice(0, numLines);
+  _showLines(linesToShow) {
     console.table(linesToShow);
     return new DataFrame(linesToShow);
   }
 
+  _getLinesToShow(numLines, startIndex) {
+    if (!Number.isInteger(numLines)) {
+      throw new TypeError("numLines argument must be an integer");
+    }
+    if (numLines <= 0) {
+      return [];
+    }
+    return this._data.slice(startIndex, startIndex + numLines);
+  }
+
+  head(numLines = 5) {
+    const linesToShow = this._getLinesToShow(numLines, 0);
+    return this._showLines(linesToShow);
+  }
+
   tail(numLines = 5) {
-    const linesToShow = this._data.slice(-numLines);
-    console.table(linesToShow);
-    return new DataFrame(linesToShow);
+    const linesToShow = this._getLinesToShow(numLines, -numLines);
+    return this._showLines(linesToShow);
   }
 
   unique(property) {
