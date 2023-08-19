@@ -1,1 +1,1 @@
-export { DataFrame } from "./dataframe/DataFrame.js";
+export { DataFrame } from "./core/frame.js";

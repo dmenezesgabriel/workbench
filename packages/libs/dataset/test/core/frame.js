@@ -1,6 +1,6 @@
 import { describe, it, beforeEach } from "node:test";
 import assert from "node:assert";
-import { DataFrame } from "../../src/dataframe/DataFrame.js";
+import { DataFrame } from "../../src/core/frame.js";
 
 describe("DataFrame head method", () => {
   let data;

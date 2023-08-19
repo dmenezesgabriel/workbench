@@ -1,13 +1,13 @@
-import { Cast } from "./Cast.js";
-import { Rolling } from "./Rolling.js";
-import { Pivot } from "./Pivot.js";
-import { Select } from "./Select.js";
-import { Filter } from "./Filter.js";
-import { Unique } from "./Unique.js";
-import { Merge } from "./Merge.js";
-import { Rename } from "./Rename.js";
+import { Cast } from "../helpers/cast.js";
+import { Rolling } from "../helpers/rolling.js";
+import { Pivot } from "../helpers/pivot.js";
+import { Select } from "../helpers/select.js";
+import { Filter } from "../helpers/filter.js";
+import { Unique } from "../helpers/unique.js";
+import { Merge } from "../helpers/merge.js";
+import { Rename } from "../helpers/rename.js";
 import { aggregateData } from "../utils/mathOperations.js";
-import { Series } from "./Series.js";
+import { Series } from "./series.js";
 
 class DataFrame {
   constructor(data) {
