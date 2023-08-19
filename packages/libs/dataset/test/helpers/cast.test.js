@@ -125,13 +125,14 @@ describe("cast helper Cast", () => {
       .method(Cast.prototype, "_getTargeType")
       .mock.mockImplementation(() => "string");
 
-    cast.asType({
+    const result = cast.asType({
       name: "string",
     });
 
     const calls = Cast.prototype._getTargeType.mock.calls;
     assert.deepStrictEqual(calls[0].arguments[0], "string");
     assert.deepStrictEqual(Cast.prototype._getTargeType.mock.callCount(), 1);
+    assert.deepStrictEqual(result[0].name, "John");
   });
 
   it("should call _convertValue", () => {
@@ -141,13 +142,14 @@ describe("cast helper Cast", () => {
       .method(Cast.prototype, "_convertValue")
       .mock.mockImplementation(() => "John");
 
-    cast.asType({
+    const result = cast.asType({
       name: "string",
     });
 
     const calls = Cast.prototype._convertValue.mock.calls;
     assert.deepStrictEqual(calls[0].arguments[0], "John");
     assert.deepStrictEqual(Cast.prototype._convertValue.mock.callCount(), 1);
+    assert.deepStrictEqual(result[0].name, "John");
   });
 
   it("should cast data", () => {
