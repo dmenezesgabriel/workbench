@@ -1,16 +1,20 @@
+/**
+ * @template T
+ */
 class Filter {
+  /**
+   * @param {T[]} data
+   */
   constructor(data) {
     this._data = data;
   }
-
+  /**
+   * @template T
+   * @param {(row: T) => boolean} condition
+   * @returns {T[]}
+   */
   filter(condition) {
-    const filteredData = [];
-    for (const row of this._data) {
-      if (condition(row)) {
-        filteredData.push(row);
-      }
-    }
-    return filteredData;
+    return this._data.filter((row) => condition(row));
   }
 }
 

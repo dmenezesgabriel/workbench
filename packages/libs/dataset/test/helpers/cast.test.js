@@ -1,5 +1,4 @@
-import { describe, it, beforeEach, mock } from "node:test";
-import assert from "node:assert";
+import { describe, it, beforeEach, jest, expect } from "@jest/globals";
 import {
   Converter,
   StringConverter,
@@ -11,61 +10,63 @@ import {
 
 describe("cast helper Converter", () => {
   beforeEach(() => {
-    mock.restoreAll();
+    jest.restoreAllMocks();
   });
 
   it("should call _convert", () => {
     const converter = new Converter();
-    mock
-      .method(Converter.prototype, "_convert")
-      .mock.mockImplementation(() => "John");
+    const spy = jest.spyOn(converter, "_convert").mockReturnValue("John");
 
     converter.convert("John");
 
-    const calls = Converter.prototype._convert.mock.calls;
-    assert.deepStrictEqual(calls[0].arguments[0], "John");
-    assert.deepStrictEqual(Converter.prototype._convert.mock.callCount(), 1);
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(spy).toHaveBeenCalledWith("John");
+    expect(spy).toHaveReturnedWith("John");
   });
 
   it("should throw an error when calling _convert", () => {
     const converter = new Converter();
-    assert.throws(() => converter._convert(), Error);
+    jest.spyOn(converter, "_convert").mockImplementation(() => {
+      throw new Error("Error");
+    });
+
+    expect(() => converter.convert("John")).toThrow(Error);
   });
 });
 
 describe("cast helper StringConverter", () => {
   it("should convert to string", () => {
     const converter = new StringConverter();
-    assert.strictEqual(converter.convert(1), "1");
+    expect(converter.convert(1)).toEqual("1");
   });
 
   it("should throw an error when calling convert with no arguments", () => {
     const converter = new StringConverter();
-    assert.throws(() => converter.convert(), Error);
+    expect(() => converter.convert()).toThrow(Error);
   });
 });
 
 describe("cast helper NumberConverter", () => {
   it("should convert to number", () => {
     const converter = new NumberConverter();
-    assert.strictEqual(converter.convert("1"), 1);
+    expect(converter.convert("1")).toEqual(1);
   });
 
   it("should throw an error when calling convert with no arguments", () => {
     const converter = new NumberConverter();
-    assert.throws(() => converter.convert(), Error);
+    expect(() => converter.convert()).toThrow(Error);
   });
 });
 
 describe("cast helper BooleanConverter", () => {
   it("should convert to boolean", () => {
     const converter = new BooleanConverter();
-    assert.strictEqual(converter.convert(1), true);
+    expect(converter.convert("true")).toEqual(true);
   });
 
   it("should throw an error when calling convert with no arguments", () => {
     const converter = new BooleanConverter();
-    assert.throws(() => converter.convert(), Error);
+    expect(() => converter.convert()).toThrow(Error);
   });
 });
 
@@ -79,12 +80,12 @@ describe("cast helper DateConverter", () => {
 
   it("should convert to date", () => {
     const converter = new DateConverter(options);
-    assert.strictEqual(converter.convert("1979-03-22"), "March 21, 1979");
+    expect(converter.convert("1979-03-22")).toEqual(new Date("1979-03-22"));
   });
 
   it("should throw an error when calling convert with no arguments", () => {
     const converter = new DateConverter(options);
-    assert.throws(() => converter.convert(), Error);
+    expect(() => converter.convert()).toThrow(Error);
   });
 });
 
@@ -95,61 +96,30 @@ describe("cast helper Cast", () => {
       { name: "John", age: "1", active: "true", birthDate: "1979-03-22" },
     ];
 
-    mock.restoreAll();
-  });
-
-  it("should return target type", () => {
-    const cast = new Cast(data);
-    assert.strictEqual(cast._getTargeType("string"), "string");
-    assert.strictEqual(cast._getTargeType({ type: "string" }), "string");
+    jest.restoreAllMocks();
   });
 
   it("should convert value", () => {
     const cast = new Cast(data);
-    assert.strictEqual(cast._convertValue(1, "string"), "1");
-    assert.strictEqual(cast._convertValue(1, "number"), 1);
-    assert.strictEqual(cast._convertValue(1, "boolean"), true);
-    assert.strictEqual(
-      cast._convertValue("1979-03-22", {
-        type: "Date",
-        options: { format: { year: "numeric" } },
-      }),
-      "1979"
-    );
-  });
-
-  it("should call _getTargeType", () => {
-    console.log("should call _getTargeType");
-    const cast = new Cast(data);
-    mock
-      .method(Cast.prototype, "_getTargeType")
-      .mock.mockImplementation(() => "string");
-
-    const result = cast.asType({
-      name: "string",
-    });
-
-    const calls = Cast.prototype._getTargeType.mock.calls;
-    assert.deepStrictEqual(calls[0].arguments[0], "string");
-    assert.deepStrictEqual(Cast.prototype._getTargeType.mock.callCount(), 1);
-    assert.deepStrictEqual(result[0].name, "John");
+    expect(cast._convertValue(1, "string")).toEqual("1");
+    expect(cast._convertValue(1, "number")).toEqual(1);
+    expect(cast._convertValue(1, "boolean")).toEqual(true);
+    const expectedDate = new Date("1979-03-22");
+    expect(cast._convertValue("1979-03-22", "date")).toEqual(expectedDate);
   });
 
   it("should call _convertValue", () => {
-    console.log("should call _convertValue");
     const cast = new Cast(data);
-    mock
-      .method(Cast.prototype, "_convertValue")
-      .mock.mockImplementation(() => "John");
+    const spy = jest.spyOn(cast, "_convertValue").mockReturnValue("John");
 
     const result = cast.asType({
       name: "string",
     });
 
-    const calls = Cast.prototype._convertValue.mock.calls;
-    assert.deepStrictEqual(calls[0].arguments[0], "John");
-    assert.deepStrictEqual(Cast.prototype._convertValue.mock.callCount(), 1);
-    assert.deepStrictEqual(result[0].name, "John");
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(spy).toHaveBeenCalledWith("John", "string");
+    expect(spy).toHaveReturnedWith("John");
+    expect(result[0].name).toEqual("John");
   });
 
   it("should cast data", () => {
@@ -159,16 +129,18 @@ describe("cast helper Cast", () => {
       name: "string",
       age: "number",
       active: "boolean",
-      birthDate: { type: "Date", options: { format: { year: "numeric" } } },
+      birthDate: "date",
     });
-    assert.strictEqual(result[0].name, "John");
-    assert.strictEqual(result[0].age, 1);
-    assert.strictEqual(result[0].active, true);
-    assert.strictEqual(result[0].birthDate, "1979");
+
+    expect(result[0].name).toEqual("John");
+    expect(result[0].age).toEqual(1);
+    expect(result[0].active).toEqual(true);
+    const expectedDate = new Date("1979-03-22");
+    expect(result[0].birthDate).toEqual(expectedDate);
   });
 
   it("should throw an error when calling cast with no arguments", () => {
     const cast = new Cast(data);
-    assert.throws(() => cast.cast(), Error);
+    expect(() => cast.cast()).toThrow(Error);
   });
 });

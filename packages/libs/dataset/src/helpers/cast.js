@@ -1,15 +1,4 @@
 /**
- * @typedef {Object} Options
- * @property {string} [format] - The format to use when converting a date to a string.
- */
-
-/**
- * @typedef {Object} Target
- * @property {string} type - The type to convert the value to.
- * @property {Options} [options] - The options to use when converting a value to a date.
- */
-
-/**
  * @typedef {Object} Row
  * @property {*} [key] - The key of the row.
  * @property {*} [value] - The value of the row.
@@ -95,10 +84,6 @@ class BooleanConverter extends Converter {
    * @param {*} value - The value to convert.
    * @returns {boolean} The converted value.
    */
-  constructor() {
-    super();
-  }
-
   _convert(value) {
     return Boolean(value);
   }
@@ -111,27 +96,13 @@ class BooleanConverter extends Converter {
  */
 class DateConverter extends Converter {
   /**
-   * @constructor
-   * @param {Options} options - The options to use when converting a value to a date.
-   */
-  constructor(options) {
-    super();
-    this.options = options;
-  }
-
-  /**
    * @function
    * @param {*} value - The value to convert.
-   * @returns {string|Date} The converted value.
+   * @returns {Date} The converted value.
    */
 
   _convert(value) {
-    const formattedDate = new Date(value);
-    if (this.options.format) {
-      return formattedDate.toLocaleString(undefined, this.options.format);
-    } else {
-      return formattedDate;
-    }
+    return new Date(value);
   }
 }
 
@@ -151,29 +122,19 @@ class Cast {
   /**
    * @function
    * @private
-   * @param {Target} target - The target to convert the value to.
-   * @returns {string} The type of the target.
-   */
-  _getTargeType(target) {
-    return typeof target === "object" ? target.type : target;
-  }
-
-  /**
-   * @function
-   * @private
    * @param {*} value - The value to convert.
    * @param {Target} target - The target to convert the value to.
    * @returns {*} The converted value.
    */
   _convertValue(value, target) {
-    const converters = new Map([
-      ["string", () => new StringConverter().convert(value)],
-      ["number", () => new NumberConverter().convert(value)],
-      ["boolean", () => new BooleanConverter().convert(value)],
-      ["Date", () => new DateConverter(target?.options).convert(value)],
-    ]);
+    const converters = {
+      string: () => new StringConverter().convert(value),
+      number: () => new NumberConverter().convert(value),
+      boolean: () => new BooleanConverter().convert(value),
+      date: () => new DateConverter(target).convert(value),
+    };
 
-    const converter = converters.get(this._getTargeType(target));
+    const converter = converters[target];
     return converter();
   }
 
