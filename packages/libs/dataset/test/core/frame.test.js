@@ -2,7 +2,7 @@ import { describe, it, beforeEach } from "node:test";
 import assert from "node:assert";
 import { DataFrame } from "../../src/core/frame.js";
 
-describe("DataFrame head method", () => {
+describe("core frame DataFrame head method", () => {
   let data;
   beforeEach(() => {
     data = [
@@ -50,7 +50,7 @@ describe("DataFrame head method", () => {
   });
 });
 
-describe("DataFrame tail method", () => {
+describe("core frame DataFrame tail method", () => {
   let data;
   beforeEach(() => {
     data = [

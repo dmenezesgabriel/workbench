@@ -30,8 +30,22 @@ class Converter {
    * @abstract
    * @param {*} value - The value to convert.
    * @returns {*} The converted value.
+   * @throws {Error} If the value is undefined or null.
    */
   convert(value) {
+    if (value === undefined || value === null) {
+      throw new Error("Value cannot be undefined or null.");
+    }
+    return this._convert(value);
+  }
+
+  /**
+   * @function
+   * @abstract
+   * @param {*} value - The value to convert.
+   * @returns {*} The converted value.
+   */
+  _convert(value) {
     throw new Error("Not implemented");
   }
 }
@@ -47,7 +61,8 @@ class StringConverter extends Converter {
    * @param {*} value - The value to convert.
    * @returns {string} The converted value.
    */
-  convert(value) {
+
+  _convert(value) {
     return String(value);
   }
 }
@@ -63,7 +78,8 @@ class NumberConverter extends Converter {
    * @param {*} value - The value to convert.
    * @returns {number} The converted value.
    */
-  convert(value) {
+
+  _convert(value) {
     return Number(value);
   }
 }
@@ -79,7 +95,11 @@ class BooleanConverter extends Converter {
    * @param {*} value - The value to convert.
    * @returns {boolean} The converted value.
    */
-  convert(value) {
+  constructor() {
+    super();
+  }
+
+  _convert(value) {
     return Boolean(value);
   }
 }
@@ -104,7 +124,8 @@ class DateConverter extends Converter {
    * @param {*} value - The value to convert.
    * @returns {string|Date} The converted value.
    */
-  convert(value) {
+
+  _convert(value) {
     const formattedDate = new Date(value);
     if (this.options.format) {
       return formattedDate.toLocaleString(undefined, this.options.format);
@@ -152,8 +173,7 @@ class Cast {
       ["Date", () => new DateConverter(target?.options).convert(value)],
     ]);
 
-    const converter =
-      converters.get(this._getTargeType(target)) || converters.get("default");
+    const converter = converters.get(this._getTargeType(target));
     return converter();
   }
 
@@ -164,13 +184,21 @@ class Cast {
    */
   asType(convertObject) {
     return this._data.map((row) => {
-      const convertedRow = {};
-      for (const [key, targetType] of Object.entries(convertObject)) {
-        convertedRow[key] = this._convertValue(row[key], targetType);
+      const convertedRow = { ...row };
+      for (const key in convertObject) {
+        const target = convertObject[key];
+        convertedRow[key] = this._convertValue(convertedRow[key], target);
       }
       return convertedRow;
     });
   }
 }
 
-export { Cast };
+export {
+  Converter,
+  StringConverter,
+  NumberConverter,
+  BooleanConverter,
+  DateConverter,
+  Cast,
+};
