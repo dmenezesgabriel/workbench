@@ -43,6 +43,7 @@
       <select id="filter-d4" multiple>
         <!-- Add distinct dimension values dynamically using JavaScript -->
       </select>
+      <button id="reset-filters">Reset Filters</button>
     </form>
     <table>
       <thead>
@@ -218,6 +219,12 @@
                   this.updateFiltersWithRelevantValues();
                 });
               });
+
+              document
+                .getElementById("reset-filters")
+                .addEventListener("click", () => {
+                  this.resetFilters();
+                });
             }
 
             setTable(table) {
@@ -260,6 +267,15 @@
               const allOptions = Array.from(filter.element.options);
               allOptions.forEach((option) => {
                 option.disabled = !relevantValues.includes(option.value);
+              });
+            }
+
+            resetFilters() {
+              this.filters.forEach((filter) => {
+                const allOptions = Array.from(filter.element.options);
+                allOptions.forEach((option) => {
+                  option.disabled = false;
+                });
               });
             }
           }
