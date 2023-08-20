@@ -56,6 +56,9 @@ class Select {
           option.style.display = "none";
         }
       });
+      if (searchValue === "") {
+        this.selectElement.style.display = "none";
+      }
     });
 
     this.toggle.addEventListener("click", (event) => {
