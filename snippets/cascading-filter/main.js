@@ -54,17 +54,17 @@ const companyData = [
   },
 ];
 
-const filters = [
-  new Filter("filter-d1"),
-  new Filter("filter-d2"),
-  new Filter("filter-d3"),
-  new Filter("filter-d4"),
-];
+const filters = [];
 
 const dimensionNames = ["d1", "d2", "d3", "d4"];
+const filterIds = ["filter-d1", "filter-d2", "filter-d3", "filter-d4"];
 
-const selectElement = document.querySelector("#filter-d1");
-const selectWithSearch = new Select(selectElement);
+for (const filterId of filterIds) {
+  const filterElement = document.getElementById(filterId);
+  const filter = new Filter(filterElement);
+  const selectWithSearch = new Select(filterElement);
+  filters.push(filter);
+}
 
 const table = new Table();
 const filterManager = new FilterManager(companyData, filters, dimensionNames);

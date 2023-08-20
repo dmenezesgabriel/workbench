@@ -1,6 +1,6 @@
 class Filter {
-  constructor(id) {
-    this.element = document.getElementById(id);
+  constructor(element) {
+    this.element = element;
   }
 
   getSelectedOptions() {
