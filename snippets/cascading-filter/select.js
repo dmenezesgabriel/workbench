@@ -15,9 +15,12 @@ class Select {
   createSearchInput() {
     this.searchContainer = document.createElement("div");
     this.searchContainer.style.display = "flex";
-    this.searchInput = document.createElement("input");
-    this.searchInput.type = "text";
-    this.searchInput.placeholder = "Search...";
+    this.searchInput = document.createElement("div");
+    this.searchInput.style.width = "100%";
+    this.searchInput.style.border = "1px solid #ccc";
+    this.searchInput.contentEditable = true;
+    this.searchInput.classList.add("search-input");
+    this.searchInput.textContent = "Search...";
     this.searchContainer.appendChild(this.searchInput);
     this.selectElement.parentNode.insertBefore(
       this.searchContainer,
@@ -46,7 +49,7 @@ class Select {
 
   addEventListeners() {
     this.searchInput.addEventListener("input", () => {
-      const searchValue = this.searchInput.value.toLowerCase();
+      const searchValue = this.searchInput.textContent.toLowerCase();
       Array.from(this.selectElement.options).forEach((option) => {
         const optionText = option.textContent.toLowerCase();
         if (optionText.includes(searchValue)) {
@@ -64,11 +67,19 @@ class Select {
     this.toggle.addEventListener("click", (event) => {
       event.preventDefault();
       if (this.selectElement.style.display === "none") {
-        console.log("open dropdown");
         this.selectElement.style.display = "block";
       } else {
-        console.log("close dropdown");
         this.selectElement.style.display = "none";
+      }
+    });
+
+    this.searchInput.addEventListener("focusin", (event) => {
+      this.searchInput.textContent = "";
+    });
+
+    this.searchInput.addEventListener("focusout", (event) => {
+      if (this.searchInput.textContent === "") {
+        this.searchInput.textContent = "Search...";
       }
     });
 
