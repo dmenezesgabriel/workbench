@@ -1,6 +1,7 @@
 import { Table } from "./table.js";
 import { FilterManager } from "./filterManager.js";
 import { Filter } from "./filter.js";
+import { Select } from "./select.js";
 
 const companyData = [
   {
@@ -61,6 +62,9 @@ const filters = [
 ];
 
 const dimensionNames = ["d1", "d2", "d3", "d4"];
+
+const selectElement = document.querySelector("#filter-d1");
+const selectWithSearch = new Select(selectElement);
 
 const table = new Table();
 const filterManager = new FilterManager(companyData, filters, dimensionNames);

@@ -20,32 +20,69 @@
       th {
         background-color: #f2f2f2;
       }
+
+      form {
+        display: flex;
+        flex-wrap: wrap;
+      }
+
+      .form-group {
+        display: flex;
+        flex-direction: column;
+        margin-right: 8px;
+        margin-bottom: 8px;
+      }
+
+      label {
+        margin-bottom: 4px;
+      }
+
+      select {
+        flex-grow: 1;
+      }
+
+      /* Add a media query to adjust the layout on smaller screens */
+      @media (max-width: 600px) {
+        .form-group {
+          flex-basis: 100%;
+        }
+      }
     </style>
     <script src="main.js" type="module" defer></script>
   </head>
   <body>
     <form>
-      <label for="filter-d1">Filter Dimension 1:</label>
-      <select id="filter-d1" multiple>
-        <!-- Add distinct dimension values dynamically using JavaScript -->
-      </select>
+      <div class="form-group">
+        <label for="filter-d1">Filter Dimension 1:</label>
+        <select id="filter-d1" multiple>
+          <!-- Add distinct dimension values dynamically using JavaScript -->
+        </select>
+      </div>
 
-      <label for="filter-d2">Filter Dimension 2:</label>
-      <select id="filter-d2" multiple>
-        <!-- Add distinct dimension values dynamically using JavaScript -->
-      </select>
+      <div class="form-group">
+        <label for="filter-d2">Filter Dimension 2:</label>
+        <select id="filter-d2" multiple>
+          <!-- Add distinct dimension values dynamically using JavaScript -->
+        </select>
+      </div>
 
-      <label for="filter-d3">Filter Dimension 3:</label>
-      <select id="filter-d3" multiple>
-        <!-- Add distinct dimension values dynamically using JavaScript -->
-      </select>
+      <div class="form-group">
+        <label for="filter-d3">Filter Dimension 3:</label>
+        <select id="filter-d3" multiple>
+          <!-- Add distinct dimension values dynamically using JavaScript -->
+        </select>
+      </div>
 
-      <label for="filter-d4">Filter Dimension 4:</label>
-      <select id="filter-d4" multiple>
-        <!-- Add distinct dimension values dynamically using JavaScript -->
-      </select>
-      <button id="reset-filters">Reset Filters</button>
+      <div class="form-group">
+        <label for="filter-d4">Filter Dimension 4:</label>
+        <select id="filter-d4" multiple>
+          <!-- Add distinct dimension values dynamically using JavaScript -->
+        </select>
+      </div>
     </form>
+
+    <button id="reset-filters">Reset Filters</button>
+
     <table>
       <thead>
         <tr>
