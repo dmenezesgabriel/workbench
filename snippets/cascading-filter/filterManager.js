@@ -88,8 +88,10 @@ class FilterManager {
       const allOptions = Array.from(filter.element.options);
       allOptions.forEach((option) => {
         option.disabled = false;
+        option.selected = true;
       });
     });
+    this.table.updateTable(this.data, this.filters);
   }
 }
 
