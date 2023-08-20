@@ -1,11 +1,23 @@
 class Select {
   constructor(selectElement) {
     this.selectElement = selectElement;
+    this.options = [];
     this.updateSelectStyles();
     this.createSearchInput();
     this.createDropdown();
     this.createToggle();
     this.addEventListeners();
+    this.observeSelectElement();
+    this.addOption.bind(this);
+    this.getOptions.bind(this);
+  }
+
+  addOption(optionElement) {
+    this.options.push(optionElement);
+  }
+
+  getOptions() {
+    return this.options;
   }
 
   updateSelectStyles() {
@@ -91,6 +103,26 @@ class Select {
         this.selectElement.style.display = "none";
       }
     });
+  }
+
+  observeSelectElement() {
+    const observer = new MutationObserver((mutationsList) => {
+      for (const mutation of mutationsList) {
+        if (mutation.type === "childList") {
+          const addedNodes = Array.from(mutation.addedNodes);
+          const addedOptions = addedNodes.filter(
+            (node) => node.nodeName === "OPTION"
+          );
+          if (addedOptions.length > 0) {
+            this.addOption(addedOptions[0]);
+            addedOptions[0].addEventListener("mousedown", (event) => {
+              console.log(addedOptions[0].textContent);
+            });
+          }
+        }
+      }
+    });
+    observer.observe(this.selectElement, { childList: true });
   }
 }
 

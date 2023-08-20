@@ -1,7 +1,7 @@
 import { Table } from "./table.js";
 import { FilterManager } from "./filterManager.js";
 import { Filter } from "./filter.js";
-import { Select } from "./select.js";
+import { Select } from "./selectMultiple.js";
 
 const companyData = [
   {
