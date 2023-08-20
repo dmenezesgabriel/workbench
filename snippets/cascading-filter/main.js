@@ -60,8 +60,10 @@ const filters = [
   new Filter("filter-d4"),
 ];
 
+const dimensionNames = ["d1", "d2", "d3", "d4"];
+
 const table = new Table();
-const filterManager = new FilterManager(companyData, filters);
+const filterManager = new FilterManager(companyData, filters, dimensionNames);
 filterManager.setTable(table);
 filterManager.setData(companyData);
 table.updateTable(companyData, filterManager.filters);

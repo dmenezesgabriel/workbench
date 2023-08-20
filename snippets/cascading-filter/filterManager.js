@@ -1,6 +1,7 @@
 class FilterManager {
-  constructor(data, filters) {
-    this.filters = filters;
+  constructor(data, filterElements, dimensionNames) {
+    this.filters = filterElements;
+    this.dimensionNames = dimensionNames;
     this.populateFilters(data);
     this.addEventListeners();
   }
@@ -13,8 +14,8 @@ class FilterManager {
   getFilterOptions(data) {
     const filterOptions = [];
 
-    for (let i = 1; i <= this.filters.length; i++) {
-      const options = [...new Set(data.map((item) => item[`d${i}`]))];
+    for (const dimensionName of this.dimensionNames) {
+      const options = [...new Set(data.map((item) => item[dimensionName]))];
       filterOptions.push(options);
     }
 
