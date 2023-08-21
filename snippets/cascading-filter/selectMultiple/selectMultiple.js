@@ -3,8 +3,8 @@ import { Tag } from "./tag.js";
 function createSelectContainer() {
   const element = document.createElement("div");
   element.classList.add("select-container");
-  element.display = "flex";
-  element.style.flexDirection = "column";
+  element.style.display = "flex";
+  // element.style.flexDirection = "column";
   return element;
 }
 
@@ -90,7 +90,7 @@ class Select {
       this.selectElement
     );
     this.dropdown.appendChild(this.selectElement);
-    this.selectContainer.appendChild(this.dropdown);
+    this.searchContainer.appendChild(this.dropdown);
   }
 
   addTag(name) {
