@@ -129,7 +129,9 @@ class Select {
   }
 
   handleOptionClick(option, event) {
-    console.log(option.textContent);
+    event.preventDefault();
+    option.selected = !option.selected;
+    this.selectElement.dispatchEvent(new Event("change"));
   }
 }
 
