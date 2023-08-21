@@ -1,41 +1,4 @@
-class Tag {
-  constructor(name) {
-    this.name = name;
-    this.element = this.createElement();
-    this.dispose.bind(this);
-  }
-
-  dispose() {
-    this.element.dispatchEvent(
-      new CustomEvent("dispose", { detail: { name: this.name } })
-    );
-    this.element.remove();
-  }
-
-  createElement() {
-    this.element = document.createElement("div");
-    this.element.textContent = this.name;
-    this.element.appendChild(this.createDisposeButton());
-    return this.element;
-  }
-
-  createDisposeButton() {
-    const disposeButton = document.createElement("button");
-    disposeButton.textContent = "x";
-    disposeButton.addEventListener("click", (event) => {
-      event.preventDefault();
-      this.dispose();
-    });
-    return disposeButton;
-  }
-}
-
-// TODO
-// Implement TagManager
-// Implement TagInput
-// Implement OptionManager
-// Implement Dropdown
-// Implement Toggle
+import { Tag } from "./tag.js";
 
 class Select {
   constructor(selectElement) {
@@ -70,10 +33,9 @@ class Select {
 
   createSearchInput() {
     this.searchContainer = document.createElement("div");
-    this.searchContainer.style.display = "flex";
     this.tagContainer = document.createElement("div");
-    this.tagContainer.style.width = "100%";
     this.searchInput = document.createElement("input");
+    this.tagContainer.style.width = "100%";
     this.searchInput.placeholder = "Search...";
     this.searchContainer.appendChild(this.tagContainer);
     this.searchContainer.appendChild(this.searchInput);
