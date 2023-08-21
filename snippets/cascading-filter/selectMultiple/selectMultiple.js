@@ -5,6 +5,7 @@ function createSelectContainer() {
   element.classList.add("select-container");
   element.style.display = "flex";
   element.style.flexDirection = "column";
+  element.style.border = "1px solid #ccc";
   return element;
 }
 
@@ -18,6 +19,8 @@ function createSearchContainer() {
 function createTagContainer() {
   const element = document.createElement("div");
   element.classList.add("tag-container");
+  element.style.display = "flex";
+  element.style.flexDirection = "column";
   element.style.width = "100%";
   return element;
 }
@@ -25,6 +28,7 @@ function createTagContainer() {
 function createSearchInput() {
   const element = document.createElement("input");
   element.classList.add("search-input");
+  element.style.border = "none";
   element.placeholder = "Search...";
   return element;
 }
@@ -39,6 +43,9 @@ function createDropdown() {
 function createToggle() {
   const element = document.createElement("button");
   element.classList.add("toggle");
+  element.style.background = "none";
+  element.style.border = "none";
+  element.style.cursor = "pointer";
   element.innerHTML = "&#9660;";
   return element;
 }
@@ -70,6 +77,7 @@ class Select {
 
   updateSelectStyles() {
     this.selectElement.style.width = "100%";
+    this.selectElement.border = "none";
   }
 
   setup() {

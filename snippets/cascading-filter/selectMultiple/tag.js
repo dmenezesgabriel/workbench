@@ -13,20 +13,23 @@ class Tag {
   }
 
   createElement() {
-    this.element = document.createElement("div");
+    this.element = document.createElement("span");
     this.element.textContent = this.name;
     this.element.appendChild(this.createDisposeButton());
     return this.element;
   }
 
   createDisposeButton() {
-    const disposeButton = document.createElement("button");
-    disposeButton.textContent = "x";
-    disposeButton.addEventListener("click", (event) => {
+    const element = document.createElement("button");
+    element.style.background = "none";
+    element.style.border = "none";
+    element.style.cursor = "pointer";
+    element.textContent = "x";
+    element.addEventListener("click", (event) => {
       event.preventDefault();
       this.dispose();
     });
-    return disposeButton;
+    return element;
   }
 }
 
