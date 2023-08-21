@@ -106,23 +106,30 @@ class Select {
   }
 
   observeSelectElement() {
-    const observer = new MutationObserver((mutationsList) => {
-      for (const mutation of mutationsList) {
-        if (mutation.type === "childList") {
-          const addedNodes = Array.from(mutation.addedNodes);
-          const addedOptions = addedNodes.filter(
-            (node) => node.nodeName === "OPTION"
+    const observer = new MutationObserver(this.handleMutation.bind(this));
+    observer.observe(this.selectElement, { childList: true });
+  }
+
+  handleMutation(mutationsList) {
+    for (const mutation of mutationsList) {
+      if (mutation.type === "childList") {
+        const addedNodes = Array.from(mutation.addedNodes);
+        const addedOptions = addedNodes.filter(
+          (node) => node.nodeName === "OPTION"
+        );
+        if (addedOptions.length > 0) {
+          this.addOption(addedOptions[0]);
+          addedOptions[0].addEventListener(
+            "mousedown",
+            this.handleOptionClick.bind(this, addedOptions[0])
           );
-          if (addedOptions.length > 0) {
-            this.addOption(addedOptions[0]);
-            addedOptions[0].addEventListener("mousedown", (event) => {
-              console.log(addedOptions[0].textContent);
-            });
-          }
         }
       }
-    });
-    observer.observe(this.selectElement, { childList: true });
+    }
+  }
+
+  handleOptionClick(option, event) {
+    console.log(option.textContent);
   }
 }
 
