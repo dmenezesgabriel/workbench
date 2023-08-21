@@ -50,7 +50,6 @@ class Select {
     this.observeSelectElement();
     this.addOption.bind(this);
     this.getOptions.bind(this);
-    this.addPlaceholder.bind(this);
   }
 
   addOption(optionElement) {
@@ -72,17 +71,16 @@ class Select {
   createSearchInput() {
     this.searchContainer = document.createElement("div");
     this.searchContainer.style.display = "flex";
-    this.searchInput = document.createElement("div");
-    this.searchInput.style.width = "100%";
-    this.searchInput.style.border = "1px solid #ccc";
-    this.searchInput.contentEditable = true;
-    this.searchInput.classList.add("search-input");
+    this.tagContainer = document.createElement("div");
+    this.tagContainer.style.width = "100%";
+    this.searchInput = document.createElement("input");
+    this.searchInput.placeholder = "Search...";
+    this.searchContainer.appendChild(this.tagContainer);
     this.searchContainer.appendChild(this.searchInput);
     this.selectElement.parentNode.insertBefore(
       this.searchContainer,
       this.selectElement
     );
-    this.addPlaceholder();
   }
 
   createDropdown() {
@@ -102,10 +100,6 @@ class Select {
     this.toggle.innerHTML = "&#9660;";
     this.toggle.style.marginLeft = "5px";
     this.searchContainer.appendChild(this.toggle);
-  }
-
-  addPlaceholder() {
-    this.searchInput.textContent = "Search...";
   }
 
   addTag(name) {
@@ -151,15 +145,14 @@ class Select {
   }
 
   renderTags() {
-    this.searchInput.textContent = "";
     for (const tag of this.tags) {
-      this.searchInput.appendChild(tag.element);
+      this.tagContainer.appendChild(tag.element);
     }
   }
 
   addEventListeners() {
     this.searchInput.addEventListener("input", () => {
-      const searchValue = this.searchInput.textContent.toLowerCase();
+      const searchValue = this.searchInput.value.toLowerCase();
       Array.from(this.selectElement.options).forEach((option) => {
         const optionText = option.textContent.toLowerCase();
         if (optionText.includes(searchValue)) {
@@ -180,17 +173,6 @@ class Select {
         this.selectElement.style.display = "block";
       } else {
         this.selectElement.style.display = "none";
-      }
-    });
-
-    this.searchInput.addEventListener("focusin", (event) => {
-      if (this.searchInput.textContent === "Search...")
-        this.searchInput.textContent = "";
-    });
-
-    this.searchInput.addEventListener("focusout", (event) => {
-      if (this.searchInput.textContent === "") {
-        this.addPlaceholder();
       }
     });
 
@@ -238,7 +220,6 @@ class Select {
     }
 
     if (this.tags.length === 0) {
-      this.addPlaceholder();
     } else {
       this.renderTags();
     }
