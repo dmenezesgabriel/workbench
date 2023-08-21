@@ -4,13 +4,14 @@ function createSelectContainer() {
   const element = document.createElement("div");
   element.classList.add("select-container");
   element.style.display = "flex";
-  // element.style.flexDirection = "column";
+  element.style.flexDirection = "column";
   return element;
 }
 
 function createSearchContainer() {
   const element = document.createElement("div");
   element.classList.add("search-container");
+  element.style.display = "flex";
   return element;
 }
 
@@ -80,17 +81,17 @@ class Select {
     this.dropdown = createDropdown();
 
     this.searchContainer.appendChild(this.tagContainer);
-    this.searchContainer.appendChild(this.searchInput);
+    this.tagContainer.appendChild(this.searchInput);
 
     this.selectContainer.appendChild(this.searchContainer);
-    this.selectContainer.appendChild(this.toggle);
+    this.searchContainer.appendChild(this.toggle);
 
     this.selectElement.parentNode.insertBefore(
       this.selectContainer,
       this.selectElement
     );
     this.dropdown.appendChild(this.selectElement);
-    this.searchContainer.appendChild(this.dropdown);
+    this.selectContainer.appendChild(this.dropdown);
   }
 
   addTag(name) {
@@ -128,7 +129,7 @@ class Select {
 
   renderTags() {
     for (const tag of this.tags) {
-      this.tagContainer.appendChild(tag.element);
+      this.tagContainer.insertBefore(tag.element, this.searchInput);
     }
   }
 
