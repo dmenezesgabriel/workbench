@@ -30,6 +30,13 @@ class Tag {
   }
 }
 
+// TODO
+// Implement TagManager
+// Implement TagInput
+// Implement OptionManager
+// Implement Dropdown
+// Implement Toggle
+
 class Select {
   constructor(selectElement) {
     this.selectElement = selectElement;
