@@ -1,14 +1,54 @@
 import { Tag } from "./tag.js";
 
+function createSelectContainer() {
+  const element = document.createElement("div");
+  element.classList.add("select-container");
+  element.display = "flex";
+  element.style.flexDirection = "column";
+  return element;
+}
+
+function createSearchContainer() {
+  const element = document.createElement("div");
+  element.classList.add("search-container");
+  return element;
+}
+
+function createTagContainer() {
+  const element = document.createElement("div");
+  element.classList.add("tag-container");
+  element.style.width = "100%";
+  return element;
+}
+
+function createSearchInput() {
+  const element = document.createElement("input");
+  element.classList.add("search-input");
+  element.placeholder = "Search...";
+  return element;
+}
+
+function createDropdown() {
+  const element = document.createElement("div");
+  element.classList.add("dropdown");
+  element.style.display = "none";
+  return element;
+}
+
+function createToggle() {
+  const element = document.createElement("button");
+  element.classList.add("toggle");
+  element.innerHTML = "&#9660;";
+  return element;
+}
+
 class Select {
   constructor(selectElement) {
     this.selectElement = selectElement;
     this.options = [];
     this.tags = [];
     this.updateSelectStyles();
-    this.createSearchInput();
-    this.createDropdown();
-    this.createToggle();
+    this.setup();
     this.addEventListeners();
     this.observeSelectElement();
     this.addOption.bind(this);
@@ -31,79 +71,59 @@ class Select {
     this.selectElement.style.width = "100%";
   }
 
-  createSearchInput() {
-    this.searchContainer = document.createElement("div");
-    this.tagContainer = document.createElement("div");
-    this.searchInput = document.createElement("input");
-    this.tagContainer.style.width = "100%";
-    this.searchInput.placeholder = "Search...";
+  setup() {
+    this.selectContainer = createSelectContainer();
+    this.toggle = createToggle();
+    this.searchContainer = createSearchContainer();
+    this.tagContainer = createTagContainer();
+    this.searchInput = createSearchInput();
+    this.dropdown = createDropdown();
+
     this.searchContainer.appendChild(this.tagContainer);
     this.searchContainer.appendChild(this.searchInput);
-    this.selectElement.parentNode.insertBefore(
-      this.searchContainer,
-      this.selectElement
-    );
-  }
 
-  createDropdown() {
-    this.dropdown = document.createElement("div");
-    this.dropdown.classList.add("dropdown");
-    this.selectElement.style.display = "none";
+    this.selectContainer.appendChild(this.searchContainer);
+    this.selectContainer.appendChild(this.toggle);
+
     this.selectElement.parentNode.insertBefore(
-      this.dropdown,
+      this.selectContainer,
       this.selectElement
     );
     this.dropdown.appendChild(this.selectElement);
-  }
-
-  createToggle() {
-    this.toggle = document.createElement("button");
-    this.toggle.classList.add("toggle");
-    this.toggle.innerHTML = "&#9660;";
-    this.toggle.style.marginLeft = "5px";
-    this.searchContainer.appendChild(this.toggle);
+    this.selectContainer.appendChild(this.dropdown);
   }
 
   addTag(name) {
     if (this.isTagUnique(name)) {
-      const tag = this.createTag(name);
-      this.addTagToTags(tag);
+      const tag = new Tag(name);
+      this.tags.push(tag);
       this.addDisposeEventListener(tag);
       this.renderTags();
-      this.enableOption(name);
     }
+  }
+
+  removeTag(name) {
+    this.tags = this.tags.filter((tag) => tag.name !== name);
   }
 
   isTagUnique(name) {
     return this.tags.filter((tag) => tag.name === name).length === 0;
   }
 
-  createTag(name) {
-    return new Tag(name);
-  }
-
-  addTagToTags(tag) {
-    this.tags.push(tag);
-  }
-
   addDisposeEventListener(tag) {
     tag.element.addEventListener("dispose", (event) => {
       this.removeTag(event.detail.name);
       this.renderTags();
-      this.enableOption(event.detail.name);
+      this.disableOption(event.detail.name);
     });
   }
 
-  enableOption(name) {
+  disableOption(name) {
     this.getOptions().forEach((option) => {
       if (option.textContent.toLowerCase() === name.toLowerCase()) {
         this.setOptionDisabled(option, false);
       }
     });
-  }
-
-  removeTag(name) {
-    this.tags = this.tags.filter((tag) => tag.name !== name);
   }
 
   renderTags() {
@@ -118,23 +138,23 @@ class Select {
       Array.from(this.selectElement.options).forEach((option) => {
         const optionText = option.textContent.toLowerCase();
         if (optionText.includes(searchValue)) {
-          this.selectElement.style.display = "block";
+          this.dropdown.style.display = "block";
           option.style.display = "block";
         } else {
           option.style.display = "none";
         }
       });
       if (searchValue === "") {
-        this.selectElement.style.display = "none";
+        this.dropdown.style.display = "none";
       }
     });
 
     this.toggle.addEventListener("click", (event) => {
       event.preventDefault();
-      if (this.selectElement.style.display === "none") {
-        this.selectElement.style.display = "block";
+      if (this.dropdown.style.display === "none") {
+        this.dropdown.style.display = "block";
       } else {
-        this.selectElement.style.display = "none";
+        this.dropdown.style.display = "none";
       }
     });
 
@@ -143,7 +163,7 @@ class Select {
         !this.dropdown.contains(event.target) &&
         !this.toggle.contains(event.target)
       ) {
-        this.selectElement.style.display = "none";
+        this.dropdown.style.display = "none";
       }
     });
   }
