@@ -97,7 +97,7 @@ class Select {
     if (this.isTagUnique(name)) {
       const tag = new Tag(name);
       this.tags.push(tag);
-      this.addDisposeEventListener(tag);
+      this.addTagDisposeEventListener(tag);
       this.renderTags();
     }
   }
@@ -110,7 +110,7 @@ class Select {
     return this.tags.filter((tag) => tag.name === name).length === 0;
   }
 
-  addDisposeEventListener(tag) {
+  addTagDisposeEventListener(tag) {
     tag.element.addEventListener("dispose", (event) => {
       this.removeTag(event.detail.name);
       this.renderTags();
