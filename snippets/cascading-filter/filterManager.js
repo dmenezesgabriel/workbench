@@ -33,7 +33,7 @@ class FilterManager {
   addEventListeners() {
     this.filters.forEach((filter) => {
       filter.element.addEventListener("change", () => {
-        this.table.updateTable(this.data, this.filters);
+        this.table.updateTable(this.data, this.filters, this.dimensionNames);
         this.updateFiltersWithRelevantValues();
       });
     });

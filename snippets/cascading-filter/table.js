@@ -3,22 +3,22 @@ class Table {
     this.tbody = document.querySelector("tbody");
   }
 
-  updateTable(data, filters) {
+  updateTable(data, filters, dimensionNames) {
     const selectedFilters = filters.map((filter) =>
       filter.getSelectedOptions()
     );
 
-    const filteredData = this.filterData(data, selectedFilters);
+    const filteredData = this.filterData(data, selectedFilters, dimensionNames);
 
     this.renderTable(filteredData);
   }
 
-  filterData(data, selectedFilters) {
+  filterData(data, selectedFilters, dimensionNames) {
     return data.filter((item) =>
       selectedFilters.every((selectedOptions, index) => {
         return (
           selectedOptions.length === 0 ||
-          selectedOptions.includes(item[`d${index + 1}`])
+          selectedOptions.includes(item[dimensionNames[index]])
         );
       })
     );
