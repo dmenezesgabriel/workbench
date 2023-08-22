@@ -72,8 +72,17 @@ class Select {
     return this.options;
   }
 
-  setOptionDisabled(optionElement, disabled) {
-    optionElement.disabled = disabled;
+  setOptionNotSelected(optionElement, selected) {
+    optionElement.selected = selected;
+  }
+
+  removeFromSelection(name) {
+    this.getOptions().forEach((option) => {
+      if (option.textContent.toLowerCase() === name.toLowerCase()) {
+        this.setOptionNotSelected(option, false);
+      }
+    });
+    this.selectElement.dispatchEvent(new Event("change"));
   }
 
   updateSelectStyles() {
@@ -124,15 +133,7 @@ class Select {
     tag.element.addEventListener("dispose", (event) => {
       this.removeTag(event.detail.name);
       this.renderTags();
-      this.disableOption(event.detail.name);
-    });
-  }
-
-  disableOption(name) {
-    this.getOptions().forEach((option) => {
-      if (option.textContent.toLowerCase() === name.toLowerCase()) {
-        this.setOptionDisabled(option, false);
-      }
+      this.removeFromSelection(event.detail.name);
     });
   }
 
