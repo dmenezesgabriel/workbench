@@ -29,6 +29,7 @@ function createSearchInput() {
   const element = document.createElement("input");
   element.classList.add("search-input");
   element.style.border = "none";
+  element.style.outline = "none";
   element.placeholder = "Search...";
   return element;
 }
