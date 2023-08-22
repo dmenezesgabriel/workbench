@@ -69,11 +69,11 @@ class FilterManager {
           return (
             index === currentIndex ||
             selectedOptions.length === 0 ||
-            selectedOptions.includes(item[`d${index + 1}`])
+            selectedOptions.includes(item[this.dimensionNames[index]])
           );
         })
       )
-      .map((item) => item[`d${currentIndex + 1}`]);
+      .map((item) => item[this.dimensionNames[currentIndex]]);
   }
 
   updateFilterOptions(filter, relevantValues) {
