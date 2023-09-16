@@ -1,5 +1,5 @@
 import "./style.css";
-
+import { tableFromArrays } from "apache-arrow";
 import * as duckdb from "@duckdb/duckdb-wasm";
 import duckdb_wasm from "@duckdb/duckdb-wasm/dist/duckdb-mvp.wasm?url";
 import mvp_worker from "@duckdb/duckdb-wasm/dist/duckdb-browser-mvp.worker.js?url";
@@ -27,12 +27,16 @@ await db.instantiate(bundle.mainModule, bundle.pthreadWorker);
 
 const c = await db.connect();
 
-await db.registerFileText(`data.csv`, "1|foo\n2|bar\n");
+const arrowTable = tableFromArrays({
+  id: [1, 2, 3],
+  name: ["John", "Jane", "Jack"],
+  age: [20, 21, 22],
+});
+await c.insertArrowTable(arrowTable, { name: "arrow_table" });
 
-const r = await c.query(`SELECT * FROM read_csv_auto('data.csv')`);
-
-for (const row of r) {
-  console.log(row);
+const result = await c.query("SELECT * FROM arrow_table");
+for (const row of result) {
+  console.log(row.name);
 }
 
 document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
