@@ -62,6 +62,20 @@ const query_remote_parquet = await c.query(
 const fields = query_remote_parquet.schema.fields.map((f) => f.name);
 console.log(fields);
 
+const fieldTypes = query_remote_parquet.schema.fields.map((f) => f.type);
+console.log(fieldTypes);
+
+const fieldTypesNames = query_remote_parquet.schema.fields.map((f) =>
+  f.type.toString()
+);
+console.log(fieldTypesNames);
+
+const firstRow = query_remote_parquet.get(0)?.toString();
+console.log(firstRow);
+
+const lastRow = query_remote_parquet.get(query_remote_parquet.numRows - 1);
+console.log(lastRow);
+
 // Close the connection
 await c.close();
 
