@@ -71,10 +71,10 @@ const fieldTypesNames = query_remote_parquet.schema.fields.map((f) =>
 console.log(fieldTypesNames);
 
 const firstRow = query_remote_parquet.get(0)?.toString();
-console.log(firstRow);
+console.log(firstRow?.toString());
 
 const lastRow = query_remote_parquet.get(query_remote_parquet.numRows - 1);
-console.log(lastRow);
+console.log(lastRow?.toString());
 
 // Close the connection
 await c.close();
