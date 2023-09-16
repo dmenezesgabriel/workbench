@@ -25,6 +25,7 @@ const logger = new duckdb.ConsoleLogger();
 const db = new duckdb.AsyncDuckDB(logger, worker);
 await db.instantiate(bundle.mainModule, bundle.pthreadWorker);
 
+// Connect to a database
 const c = await db.connect();
 
 const arrowTable = tableFromArrays({
@@ -32,12 +33,37 @@ const arrowTable = tableFromArrays({
   name: ["John", "Jane", "Jack"],
   age: [20, 21, 22],
 });
-await c.insertArrowTable(arrowTable, { name: "arrow_table" });
 
-const result = await c.query("SELECT * FROM arrow_table");
-for (const row of result) {
-  console.log(row.name);
-}
+console.log(
+  `Null count: ${arrowTable.nullCount} rows: ${arrowTable.numRows} cols: ${arrowTable.numCols}`
+);
+
+await c.insertArrowTable(arrowTable, {
+  name: "arrow_table",
+  create: true,
+  schema: "main",
+});
+
+const arrowResult = await c.query("SELECT * FROM main.arrow_table");
+
+// Result to array
+const result = arrowResult.toArray().map((row) => row.toJSON());
+console.log(result);
+
+const query_remote_parquet = await c.query(
+  `
+  SELECT n_name, count(*)
+  FROM 'https://shell.duckdb.org/data/tpch/0_01/parquet/customer.parquet',
+       'https://shell.duckdb.org/data/tpch/0_01/parquet/nation.parquet'
+  WHERE c_nationkey = n_nationkey GROUP BY n_name;
+  `
+);
+
+const fields = query_remote_parquet.schema.fields.map((f) => f.name);
+console.log(fields);
+
+// Close the connection
+await c.close();
 
 document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
   <div>
