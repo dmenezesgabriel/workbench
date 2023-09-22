@@ -18,7 +18,7 @@ const MANUAL_BUNDLES: duckdb.DuckDBBundles = {
   }
 }
 
-export const useDuckDB = defineStore('duckdb', () => {
+export const useDuckDB = () => {
   async function getDB() {
     const bundle = await duckdb.selectBundle(MANUAL_BUNDLES)
     const worker = new Worker(bundle.mainWorker!)
@@ -43,4 +43,4 @@ export const useDuckDB = defineStore('duckdb', () => {
   return {
     query
   }
-})
+}
