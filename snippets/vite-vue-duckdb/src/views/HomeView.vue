@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import Multiselect from 'vue-multiselect'
 import { onMounted, ref } from 'vue'
-import { useDuckDB } from '../composables/db'
+import { useQueryStore } from '@/stores/query'
 
-const db = useDuckDB()
-const queryResult = ref()
+const queryStore = useQueryStore()
 
 const value = ref()
 const options = [
@@ -16,7 +15,7 @@ const options = [
 ]
 
 onMounted(async () => {
-  queryResult.value = await db.query.value
+  await queryStore.doQuery()
 })
 </script>
 
@@ -36,9 +35,8 @@ onMounted(async () => {
     />
     {{ value }}
     <br />
-    {{ queryResult }}
+    {{ queryStore.getQueryResult }}
   </main>
 </template>
 
 <style src="vue-multiselect/dist/vue-multiselect.css"></style>
-../composables/db

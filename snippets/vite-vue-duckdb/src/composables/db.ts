@@ -1,11 +1,8 @@
-import { tableFromJSON } from 'apache-arrow'
 import * as duckdb from '@duckdb/duckdb-wasm'
 import duckdb_wasm from '@duckdb/duckdb-wasm/dist/duckdb-mvp.wasm?url'
 import mvp_worker from '@duckdb/duckdb-wasm/dist/duckdb-browser-mvp.worker.js?url'
 import duckdb_wasm_eh from '@duckdb/duckdb-wasm/dist/duckdb-eh.wasm?url'
 import eh_worker from '@duckdb/duckdb-wasm/dist/duckdb-browser-eh.worker.js?url'
-import { computed } from 'vue'
-import { defineStore } from 'pinia'
 
 const MANUAL_BUNDLES: duckdb.DuckDBBundles = {
   mvp: {
@@ -28,19 +25,7 @@ export const useDuckDB = () => {
     return db
   }
 
-  const query = computed(async () => {
-    const db = await getDB()
-
-    const conn = await db.connect()
-
-    const result = await conn.query('SELECT 42 as answer')
-
-    await conn.close()
-
-    return result.toArray().map((row) => row.toJSON())
-  })
-
   return {
-    query
+    getDB
   }
 }
