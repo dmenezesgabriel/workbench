@@ -6,6 +6,8 @@ import { useQueryStore } from '../stores/query'
 const queryStore = useQueryStore()
 const superstoreData = ref()
 
+const lastModifiedFilter = ref()
+
 const stateModel = ref()
 const stateOptions = ref<undefined | any[]>([])
 const cityModel = ref()
@@ -33,28 +35,46 @@ onMounted(async () => {
 watch(
   [() => citySelectValues.value, () => stateSelectValues.value],
   async ([cityVal, stateVal]) => {
-    if (!cityVal.length && !stateVal.length) {
-      const queryStore = useQueryStore()
-      const data = await queryStore.doQuery('SELECT DISTINCT State, City FROM superstore;')
-      superstoreData.value = data
-      stateOptions.value = await queryStore.doQuery(
-        'SELECT DISTINCT State as name FROM superstore;'
-      )
-      cityOptions.value = await queryStore.doQuery('SELECT DISTINCT City as name FROM superstore;')
-
-      return
-    }
     const queryStore = useQueryStore()
-    let query = 'SELECT State, City FROM superstore WHERE '
 
     const filters = [
       { values: cityVal, field: 'City' },
       { values: stateVal, field: 'State' }
     ]
+
+    let dataQuery = 'SELECT State, City FROM superstore WHERE '
+    let filterQuery = 'SELECT DISTINCT State, City FROM superstore WHERE '
+
+    if (!cityVal.length && !stateVal.length) {
+      const dataQuery = 'SELECT DISTINCT State, City FROM superstore'
+      const filterQuery = 'SELECT DISTINCT State, City FROM superstore'
+      const data = await queryStore.doQuery(dataQuery)
+      superstoreData.value = data
+
+      const filterData = await queryStore.doQuery(filterQuery)
+      stateOptions.value = filterData?.map((row: any) => ({
+        name: row.State
+      }))
+      cityOptions.value = filterData?.map((row: any) => ({
+        name: row.City
+      }))
+
+      return
+    }
+
     const activeFilters = filters.filter((filter) => filter.values.length > 0)
 
+    lastModifiedFilter.value = filters.find((filter) => filter.values.length > 0)
+
     if (activeFilters.length > 0) {
-      query += activeFilters
+      dataQuery += activeFilters
+        .map((filter) => {
+          const values = filter.values.map((value: any) => `'${value}'`).join(',')
+          return `${filter.field} IN (${values})`
+        })
+        .join(' AND ')
+
+      filterQuery += activeFilters
         .map((filter) => {
           const values = filter.values.map((value: any) => `'${value}'`).join(',')
           return `${filter.field} IN (${values})`
@@ -62,14 +82,16 @@ watch(
         .join(' AND ')
     }
 
-    const data = await queryStore.doQuery(query)
+    const data = await queryStore.doQuery(dataQuery)
 
     superstoreData.value = data
 
-    stateOptions.value = [...new Set(data?.map((row) => row.State))].map((row: any) => ({
+    const filterData = await queryStore.doQuery(filterQuery)
+
+    stateOptions.value = [...new Set(filterData?.map((row) => row.State))].map((row: any) => ({
       name: row
     }))
-    cityOptions.value = [...new Set(data?.map((row) => row.City))].map((row: any) => ({
+    cityOptions.value = [...new Set(filterData?.map((row) => row.City))].map((row: any) => ({
       name: row
     }))
   }
