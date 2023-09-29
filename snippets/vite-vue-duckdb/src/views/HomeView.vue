@@ -11,7 +11,7 @@ const stateOptions = ref<undefined | any[]>([])
 const cityModel = ref()
 const cityOptions = ref<undefined | any[]>([])
 
-const stateSelectValus = computed(() => {
+const stateSelectValues = computed(() => {
   if (!stateModel.value) return []
   return stateModel.value.map((v: any) => v.name)
 })
@@ -24,46 +24,54 @@ const citySelectValues = computed(() => {
 onMounted(async () => {
   await queryStore.initDB()
   await queryStore.loadData()
-  const data = await queryStore.doQuery(
-    'SELECT * FROM superstore ORDER BY "Order Date" ASC LIMIT 202;'
-  )
+  const data = await queryStore.doQuery('SELECT DISTINCT State, City FROM superstore;')
   superstoreData.value = data
 
   stateOptions.value = await queryStore.doQuery('SELECT DISTINCT State as name FROM superstore;')
   cityOptions.value = await queryStore.doQuery('SELECT DISTINCT City as name FROM superstore;')
 })
-
 watch(
-  () => citySelectValues.value,
-  async (newVal) => {
-    if (!newVal.length) {
+  [() => citySelectValues.value, () => stateSelectValues.value],
+  async ([cityVal, stateVal]) => {
+    if (!cityVal.length && !stateVal.length) {
       const queryStore = useQueryStore()
-      const data = await queryStore.doQuery('SELECT * FROM superstore LIMIT 202;')
+      const data = await queryStore.doQuery('SELECT DISTINCT State, City FROM superstore;')
       superstoreData.value = data
+      stateOptions.value = await queryStore.doQuery(
+        'SELECT DISTINCT State as name FROM superstore;'
+      )
+      cityOptions.value = await queryStore.doQuery('SELECT DISTINCT City as name FROM superstore;')
+
       return
     }
     const queryStore = useQueryStore()
-    const data = await queryStore.doQuery(
-      `SELECT * FROM superstore WHERE City IN (${newVal.map((v: string) => `'${v}'`).join(',')});`
-    )
-    superstoreData.value = data
-  }
-)
+    let query = 'SELECT State, City FROM superstore WHERE '
 
-watch(
-  () => stateSelectValus.value,
-  async (newVal) => {
-    if (!newVal.length) {
-      const queryStore = useQueryStore()
-      const data = await queryStore.doQuery('SELECT * FROM superstore LIMIT 202;')
-      superstoreData.value = data
-      return
+    const filters = [
+      { values: cityVal, field: 'City' },
+      { values: stateVal, field: 'State' }
+    ]
+    const activeFilters = filters.filter((filter) => filter.values.length > 0)
+
+    if (activeFilters.length > 0) {
+      query += activeFilters
+        .map((filter) => {
+          const values = filter.values.map((value: any) => `'${value}'`).join(',')
+          return `${filter.field} IN (${values})`
+        })
+        .join(' AND ')
     }
-    const queryStore = useQueryStore()
-    const data = await queryStore.doQuery(
-      `SELECT * FROM superstore WHERE State IN (${newVal.map((v: string) => `'${v}'`).join(',')});`
-    )
+
+    const data = await queryStore.doQuery(query)
+
     superstoreData.value = data
+
+    stateOptions.value = [...new Set(data?.map((row) => row.State))].map((row: any) => ({
+      name: row
+    }))
+    cityOptions.value = [...new Set(data?.map((row) => row.City))].map((row: any) => ({
+      name: row
+    }))
   }
 )
 </script>
