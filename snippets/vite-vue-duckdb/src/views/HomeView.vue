@@ -43,23 +43,27 @@ watch(
     ]
 
     let dataQuery = 'SELECT State, City FROM superstore WHERE '
-    let filterQuery = 'SELECT DISTINCT State, City FROM superstore WHERE '
+    let filterQuery = 'SELECT DISTINCT State, City FROM superstore'
 
     if (!cityVal.length && !stateVal.length) {
       const dataQuery = 'SELECT DISTINCT State, City FROM superstore'
-      const filterQuery = 'SELECT DISTINCT State, City FROM superstore'
       const data = await queryStore.doQuery(dataQuery)
       superstoreData.value = data
+      return
+    }
 
+    if (!cityVal.length) {
       const filterData = await queryStore.doQuery(filterQuery)
       stateOptions.value = filterData?.map((row: any) => ({
         name: row.State
       }))
+    }
+
+    if (!stateVal.length) {
+      const filterData = await queryStore.doQuery(filterQuery)
       cityOptions.value = filterData?.map((row: any) => ({
         name: row.City
       }))
-
-      return
     }
 
     const activeFilters = filters.filter((filter) => filter.values.length > 0)
@@ -74,6 +78,7 @@ watch(
         })
         .join(' AND ')
 
+      filterQuery += ' WHERE '
       filterQuery += activeFilters
         .map((filter) => {
           const values = filter.values.map((value: any) => `'${value}'`).join(',')
@@ -88,12 +93,17 @@ watch(
 
     const filterData = await queryStore.doQuery(filterQuery)
 
-    stateOptions.value = [...new Set(filterData?.map((row) => row.State))].map((row: any) => ({
-      name: row
-    }))
-    cityOptions.value = [...new Set(filterData?.map((row) => row.City))].map((row: any) => ({
-      name: row
-    }))
+    if (lastModifiedFilter.value?.field !== 'City') {
+      cityOptions.value = [...new Set(data?.map((row) => row.City))].map((row: any) => ({
+        name: row
+      }))
+    }
+
+    if (lastModifiedFilter.value?.field !== 'State') {
+      stateOptions.value = [...new Set(filterData?.map((row) => row.State))].map((row: any) => ({
+        name: row
+      }))
+    }
   }
 )
 </script>
