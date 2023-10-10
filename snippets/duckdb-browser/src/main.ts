@@ -1,3 +1,4 @@
+import { Buffer } from "buffer";
 import "./style.css";
 import { tableFromArrays } from "apache-arrow";
 import * as duckdb from "@duckdb/duckdb-wasm";
@@ -45,6 +46,23 @@ await c.insertArrowTable(arrowTable, {
 });
 
 const arrowResult = await c.query("SELECT * FROM main.arrow_table");
+
+await db.registerEmptyFileBuffer("/out/output.csv");
+await c.query(
+  "COPY (SELECT * FROM main.arrow_table) TO '/out/output.csv' (HEADER, DELIMITER ',')"
+);
+const buffer = await db.copyFileToBuffer("/out/output.csv");
+
+let csv = "";
+const link = document.createElement("a");
+if (buffer) {
+  csv = Buffer.from(buffer).toString("utf-8");
+  console.log(csv);
+  const blob = new Blob([csv], { type: "text/csv" });
+  link.href = window.URL.createObjectURL(blob);
+  link.innerText = "Download";
+  link.download = "output.csv";
+}
 
 // Result to array
 const result = arrowResult.toArray().map((row) => row.toJSON());
@@ -135,5 +153,7 @@ await c.close();
 document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
   <div>
     Hello, World!
+    <div id="download"></div>
   </div>
 `;
+document.querySelector<HTMLDivElement>("#download")!.appendChild(link);
