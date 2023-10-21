@@ -26,8 +26,8 @@ newCellButton.addEventListener("click", function () {
   createCell();
 });
 
-executeAllButton.addEventListener("click", function () {
-  executeAllCells();
+executeAllButton.addEventListener("click", async function () {
+  await executeAllCells();
 });
 
 function createCell() {
@@ -60,8 +60,8 @@ function createCell() {
 
   const executeButton = document.createElement("button");
   executeButton.textContent = "Execute";
-  executeButton.addEventListener("click", function () {
-    executeCell(cell.id, optionsSelect.value);
+  executeButton.addEventListener("click", async function () {
+    await executeCell(cell.id, optionsSelect.value);
   });
 
   cellToolbar.appendChild(optionsSelect);
@@ -100,7 +100,7 @@ function deleteCell(cellId) {
   store.delete(cellId);
 }
 
-function executeCell(cellId, language) {
+async function executeCell(cellId, language) {
   const cell = document.getElementById(cellId);
   const cellInput = cell.querySelector(".cell-input");
   const cellOutput = cell.querySelector(".cell-output");
@@ -121,15 +121,20 @@ function executeCell(cellId, language) {
 
     if (language === "Typescript") {
       // Transpile from Typescript to JavaScript using TypeScript library
-      const transpileOptions = { target: ts.ScriptTarget.ES2017, module: ts.ModuleKind.CommonJS };
-      transpiledCode = ts.transpileModule(code, { compilerOptions: transpileOptions }).outputText;
+      const transpileOptions = {
+        target: ts.ScriptTarget.ES2017,
+        module: ts.ModuleKind.CommonJS,
+      };
+      transpiledCode = ts.transpileModule(code, {
+        compilerOptions: transpileOptions,
+      }).outputText;
     } else if (language === "ES6") {
       // Transpile from Typescript to JavaScript using Babel library
       const transpileOptions = { presets: ["es2015"] };
       transpiledCode = Babel.transform(code, transpileOptions).code;
     }
 
-    const output = eval(transpiledCode);
+    const output = await eval(transpiledCode);
     cellOutput.textContent = consoleOutput + output;
   } catch (error) {
     console.error(error);
@@ -143,11 +148,11 @@ function executeCell(cellId, language) {
   saveCellState(cellId, cellInput.value, language);
 }
 
-function executeAllCells() {
+async function executeAllCells() {
   const cells = document.querySelectorAll(".cell");
-  cells.forEach(function (cell) {
+  cells.forEach(async function (cell) {
     const cellId = cell.id;
-    executeCell(cellId);
+    await executeCell(cellId);
   });
 }
 
