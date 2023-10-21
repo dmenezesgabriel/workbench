@@ -130,11 +130,13 @@ async function executeCell(cellId, language) {
       }).outputText;
     } else if (language === "ES6") {
       // Transpile from Typescript to JavaScript using Babel library
-      const transpileOptions = { presets: ["es2015"] };
+      const transpileOptions = { presets: ["es2016"] };
       transpiledCode = Babel.transform(code, transpileOptions).code;
     }
 
-    const output = await eval(transpiledCode);
+    const output = await eval(
+      "(async () => {return " + transpiledCode + "\n})()"
+    );
     cellOutput.textContent = consoleOutput + output;
   } catch (error) {
     console.error(error);
@@ -212,8 +214,8 @@ function createCellFromDB(cellData) {
 
   const executeButton = document.createElement("button");
   executeButton.textContent = "Execute";
-  executeButton.addEventListener("click", function () {
-    executeCell(cell.id, optionsSelect.value);
+  executeButton.addEventListener("click", async function () {
+    await executeCell(cell.id, optionsSelect.value);
   });
 
   cellToolbar.appendChild(optionsSelect);
