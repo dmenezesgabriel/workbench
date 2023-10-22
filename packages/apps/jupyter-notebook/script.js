@@ -108,12 +108,12 @@ async function executeCell(cellId, language) {
   const code = cellInput.value;
   cellOutput.textContent = "";
 
+  const capturedLogs = [];
   // Override console.log to capture its output
   const originalConsoleLog = console.log;
-  let consoleOutput = "";
-  console.log = function (message) {
-    consoleOutput += message + "\n";
-    originalConsoleLog.apply(console, arguments);
+  console.log = (...args) => {
+    capturedLogs.push(args);
+    originalConsoleLog(...args);
   };
 
   try {
@@ -123,7 +123,7 @@ async function executeCell(cellId, language) {
       // Transpile from Typescript to JavaScript using TypeScript library
       const transpileOptions = {
         target: ts.ScriptTarget.ES2017,
-        module: ts.ModuleKind.CommonJS,
+        module: ts.ModuleKind.ES2017,
       };
       transpiledCode = ts.transpileModule(code, {
         compilerOptions: transpileOptions,
@@ -134,10 +134,19 @@ async function executeCell(cellId, language) {
       transpiledCode = Babel.transform(code, transpileOptions).code;
     }
 
-    const output = await eval(
-      "(async () => {return " + transpiledCode + "\n})()"
-    );
-    cellOutput.textContent = consoleOutput + output;
+    let out = {};
+
+    const blob = new Blob([transpiledCode], {
+      type: "application/javascript",
+    });
+    const blobURL = URL.createObjectURL(blob);
+    out = await import(blobURL);
+    if (out) {
+      Object.assign(window, out);
+    }
+
+    // cellOutput.textContent = capturedLogs.slice(-1)[0];
+    cellOutput.textContent = out.default;
   } catch (error) {
     console.error(error);
     cellOutput.textContent = "Error: " + error.message;
