@@ -28,6 +28,7 @@ const citySelectValues = computed(() => {
 })
 
 onMounted(async () => {
+  // console.log(nunjucks.render('hello.sql', { username: 'James' }))
   await queryStore.initDB()
   await queryStore.loadData()
   const { db } = queryStore
@@ -70,12 +71,7 @@ watch(
     const dataQuery = nunjucks.renderString(
       `
         SELECT State, City FROM superstore WHERE
-        {% for filter in activeFilters %}
-          {{ filter.field }} IN ({% for value in filter.values %}'{{ value }}'{% if not loop.last %},{% endif %}{% endfor %})
-          {% if not loop.last %}
-            AND
-          {% endif %}
-        {% endfor %}
+        {% include "filters.sql" %}
       `,
       {
         activeFilters: activeFilters
@@ -85,12 +81,7 @@ watch(
     let filterQuery = nunjucks.renderString(
       `
         SELECT DISTINCT State, City FROM superstore WHERE
-        {% for filter in activeFilters %}
-          {{ filter.field }} IN ({% for value in filter.values %}'{{ value }}'{% if not loop.last %},{% endif %}{% endfor %})
-          {% if not loop.last %}
-            AND
-          {% endif %}
-        {% endfor %}
+        {% include "filters.sql" %}
       `,
       {
         activeFilters: activeFilters
