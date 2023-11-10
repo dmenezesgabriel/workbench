@@ -15,17 +15,20 @@ const MANUAL_BUNDLES: duckdb.DuckDBBundles = {
   }
 }
 
-export const useDuckDB = () => {
-  async function getDB() {
+class DatabaseManager {
+  private db: duckdb.AsyncDuckDB | undefined
+
+  async getDB() {
+    if (this.db) {
+      return this.db
+    }
     const bundle = await duckdb.selectBundle(MANUAL_BUNDLES)
     const worker = new Worker(bundle.mainWorker!)
     const logger = new duckdb.ConsoleLogger()
-    const db = new duckdb.AsyncDuckDB(logger, worker)
-    await db.instantiate(bundle.mainModule, bundle.pthreadWorker)
-    return db
-  }
-
-  return {
-    getDB
+    this.db = new duckdb.AsyncDuckDB(logger, worker)
+    await this.db.instantiate(bundle.mainModule, bundle.pthreadWorker)
+    return this.db
   }
 }
+
+export { DatabaseManager }

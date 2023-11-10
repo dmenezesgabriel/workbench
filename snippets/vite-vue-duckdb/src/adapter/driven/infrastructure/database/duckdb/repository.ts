@@ -1,3 +1,4 @@
+import * as duckdb from '@duckdb/duckdb-wasm'
 import type { IRepository } from '../../../../../core/application/ports/repository'
 
 class Repository implements IRepository {

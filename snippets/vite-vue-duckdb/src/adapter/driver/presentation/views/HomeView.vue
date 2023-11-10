@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import Multiselect from 'vue-multiselect'
 import { computed, onMounted, ref, watch } from 'vue'
-import { useQueryStore } from '../../../driven/infrastructure/store/pinia/query'
+import { useQueryStore } from '../../../driven/infrastructure/store/pinia/db'
 import { QueryService } from '../../../../core/application/services/queryService'
 import { Repository } from '../../../driven/infrastructure/database/duckdb/repository'
 
@@ -32,10 +32,6 @@ onMounted(async () => {
 
   const repository = new Repository(db)
   const queryService = new QueryService(repository)
-
-  // Query service class
-  console.log(await queryService.executeQuery('SELECT DISTINCT State, City FROM superstore;'))
-  //
 
   const data = await queryService.executeQuery('SELECT DISTINCT State, City FROM superstore;')
   superstoreData.value = data
@@ -213,3 +209,4 @@ table tr:nth-child(even) {
   background-color: #f2f2f2;
 }
 </style>
+../../../driven/infrastructure/store/pinia/db
