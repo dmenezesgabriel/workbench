@@ -12,6 +12,8 @@ const stateModel = ref()
 const cityModel = ref()
 
 const lastModifiedFilter = ref()
+const activeFilters = ref()
+
 const stateOptions = ref<undefined | any[]>([])
 const cityOptions = ref<undefined | any[]>([])
 
@@ -28,7 +30,6 @@ const citySelectValues = computed(() => {
 })
 
 onMounted(async () => {
-  // console.log(nunjucks.render('hello.sql', { username: 'James' }))
   await queryStore.initDB()
   await queryStore.loadData()
   const { db } = queryStore
@@ -46,11 +47,11 @@ onMounted(async () => {
     'SELECT DISTINCT City as name FROM superstore;'
   )
 })
+
 watch(
   [() => citySelectValues.value, () => stateSelectValues.value],
   async ([cityVal, stateVal]) => {
     const { db } = queryStore
-
     const repository = new Repository(db)
     const queryService = new QueryService(repository)
 
@@ -58,51 +59,20 @@ watch(
       { values: cityVal, field: 'City', options: cityOptions },
       { values: stateVal, field: 'State', options: stateOptions }
     ]
+    activeFilters.value = filters.filter((filter) => filter.values.length > 0)
 
-    if (!cityVal.length && !stateVal.length) {
-      const dataQuery = 'SELECT DISTINCT State, City FROM superstore'
-      const data = await queryService.executeQuery(dataQuery)
-      superstoreData.value = data
-      return
-    }
-
-    const activeFilters = filters.filter((filter) => filter.values.length > 0)
-
-    const dataQuery = nunjucks.renderString(
-      `
-        SELECT State, City FROM superstore WHERE
-        {% include "filters.sql" %}
-      `,
-      {
-        activeFilters: activeFilters
-      }
-    )
+    // Cascading filters
+    lastModifiedFilter.value = filters.find((filter) => filter.values.length > 0)
 
     let filterQuery = nunjucks.renderString(
       `
-        SELECT DISTINCT State, City FROM superstore WHERE
+        SELECT DISTINCT State, City FROM superstore
         {% include "filters.sql" %}
       `,
       {
-        activeFilters: activeFilters
+        activeFilters: activeFilters.value
       }
     )
-
-    for (const item of filters) {
-      if (!item.values.length) {
-        const filterData = await queryService.executeQuery(filterQuery)
-        item.options.value = filterData?.map((row: any) => ({
-          name: row[item.field]
-        }))
-      }
-    }
-
-    lastModifiedFilter.value = filters.find((filter) => filter.values.length > 0)
-
-    const data = await queryService.executeQuery(dataQuery)
-
-    superstoreData.value = data
-
     const filterData = await queryService.executeQuery(filterQuery)
 
     for (const item of filters) {
@@ -116,6 +86,24 @@ watch(
     }
   }
 )
+async function applyFilters() {
+  const { db } = queryStore
+  const repository = new Repository(db)
+  const queryService = new QueryService(repository)
+
+  const dataQuery = nunjucks.renderString(
+    `
+      SELECT State, City FROM superstore
+      {% include "filters.sql" %}
+    `,
+    {
+      activeFilters: activeFilters.value
+    }
+  )
+
+  const data = await queryService.executeQuery(dataQuery)
+  superstoreData.value = data
+}
 </script>
 
 <template>
@@ -147,6 +135,9 @@ watch(
         track-by="name"
         :preselect-first="false"
       />
+      <div>
+        <button @click="applyFilters">Apply</button>
+      </div>
     </aside>
     <main>
       <br />
