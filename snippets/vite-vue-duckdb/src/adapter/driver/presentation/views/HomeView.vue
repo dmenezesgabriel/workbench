@@ -4,16 +4,18 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useQueryStore } from '../../../driven/infrastructure/store/pinia/db'
 import { QueryService } from '../../../../core/application/services/queryService'
 import { Repository } from '../../../driven/infrastructure/database/duckdb/repository'
+import { nunjucks } from 'nunjucks'
 
 const queryStore = useQueryStore()
-const superstoreData = ref()
-
-const lastModifiedFilter = ref()
 
 const stateModel = ref()
-const stateOptions = ref<undefined | any[]>([])
 const cityModel = ref()
+
+const lastModifiedFilter = ref()
+const stateOptions = ref<undefined | any[]>([])
 const cityOptions = ref<undefined | any[]>([])
+
+const superstoreData = ref()
 
 const stateSelectValues = computed(() => {
   if (!stateModel.value) return []
@@ -52,12 +54,9 @@ watch(
     const queryService = new QueryService(repository)
 
     const filters = [
-      { values: cityVal, field: 'City' },
-      { values: stateVal, field: 'State' }
+      { values: cityVal, field: 'City', options: cityOptions },
+      { values: stateVal, field: 'State', options: stateOptions }
     ]
-
-    let dataQuery = 'SELECT State, City FROM superstore WHERE '
-    let filterQuery = 'SELECT DISTINCT State, City FROM superstore'
 
     if (!cityVal.length && !stateVal.length) {
       const dataQuery = 'SELECT DISTINCT State, City FROM superstore'
@@ -66,21 +65,23 @@ watch(
       return
     }
 
-    if (!cityVal.length) {
-      const filterData = await queryService.executeQuery(filterQuery)
-      stateOptions.value = filterData?.map((row: any) => ({
-        name: row.State
-      }))
-    }
-
-    if (!stateVal.length) {
-      const filterData = await queryService.executeQuery(filterQuery)
-      cityOptions.value = filterData?.map((row: any) => ({
-        name: row.City
-      }))
-    }
-
     const activeFilters = filters.filter((filter) => filter.values.length > 0)
+
+    let dataQuery = `
+      SELECT State, City FROM superstore WHERE
+    `
+    let filterQuery = `
+      SELECT DISTINCT State, City FROM superstore
+    `
+
+    for (const item of filters) {
+      if (!item.values.length) {
+        const filterData = await queryService.executeQuery(filterQuery)
+        item.options.value = filterData?.map((row: any) => ({
+          name: row[item.field]
+        }))
+      }
+    }
 
     lastModifiedFilter.value = filters.find((filter) => filter.values.length > 0)
 
@@ -107,18 +108,14 @@ watch(
 
     const filterData = await queryService.executeQuery(filterQuery)
 
-    if (lastModifiedFilter.value?.field !== 'City') {
-      cityOptions.value = [...new Set(data?.map((row: any) => row.City))].map((row: any) => ({
-        name: row
-      }))
-    }
-
-    if (lastModifiedFilter.value?.field !== 'State') {
-      stateOptions.value = [...new Set(filterData?.map((row: any) => row.State))].map(
-        (row: any) => ({
-          name: row
-        })
-      )
+    for (const item of filters) {
+      if (lastModifiedFilter.value?.field !== item.field) {
+        item.options.value = [...new Set(filterData?.map((row: any) => row[item.field]))].map(
+          (row: any) => ({
+            name: row
+          })
+        )
+      }
     }
   }
 )
@@ -209,4 +206,3 @@ table tr:nth-child(even) {
   background-color: #f2f2f2;
 }
 </style>
-../../../driven/infrastructure/store/pinia/db
