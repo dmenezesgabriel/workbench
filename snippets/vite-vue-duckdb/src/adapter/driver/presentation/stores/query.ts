@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { useDuckDB } from '../composables/db'
+import { useDuckDB } from '../../../driven/database/duckdb/db'
 import { computed } from 'vue'
 import { tableFromJSON } from 'apache-arrow'
 import * as duckdb from '@duckdb/duckdb-wasm'
