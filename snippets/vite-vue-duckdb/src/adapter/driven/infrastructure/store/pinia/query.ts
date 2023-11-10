@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { useDuckDB } from '../../../driven/database/duckdb/db'
+import { useDuckDB } from '../../database/duckdb/db'
 import { computed } from 'vue'
 import { tableFromJSON } from 'apache-arrow'
 import * as duckdb from '@duckdb/duckdb-wasm'
@@ -13,16 +13,6 @@ export const useQueryStore = defineStore('query', () => {
   }
 
   const db = ref<undefined | duckdb.AsyncDuckDB>()
-
-  async function doQuery(queryString: string) {
-    const conn = await db.value?.connect()
-
-    const result = await conn?.query(queryString)
-
-    await conn?.close()
-
-    return result?.toArray().map((row: any) => row.toJSON())
-  }
 
   async function initDB() {
     if (db.value) {
@@ -46,8 +36,8 @@ export const useQueryStore = defineStore('query', () => {
   }
 
   return {
-    doQuery,
     loadData,
-    initDB
+    initDB,
+    db
   }
 })

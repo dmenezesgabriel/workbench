@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import Multiselect from 'vue-multiselect'
 import { computed, onMounted, ref, watch } from 'vue'
-import { useQueryStore } from '../stores/query'
+import { useQueryStore } from '../../../driven/infrastructure/store/pinia/query'
+import { QueryService } from '../../../../core/application/services/queryService'
+import { Repository } from '../../../driven/infrastructure/database/duckdb/repository'
 
 const queryStore = useQueryStore()
 const superstoreData = ref()
@@ -26,16 +28,32 @@ const citySelectValues = computed(() => {
 onMounted(async () => {
   await queryStore.initDB()
   await queryStore.loadData()
-  const data = await queryStore.doQuery('SELECT DISTINCT State, City FROM superstore;')
+  const { db } = queryStore
+
+  const repository = new Repository(db)
+  const queryService = new QueryService(repository)
+
+  // Query service class
+  console.log(await queryService.executeQuery('SELECT DISTINCT State, City FROM superstore;'))
+  //
+
+  const data = await queryService.executeQuery('SELECT DISTINCT State, City FROM superstore;')
   superstoreData.value = data
 
-  stateOptions.value = await queryStore.doQuery('SELECT DISTINCT State as name FROM superstore;')
-  cityOptions.value = await queryStore.doQuery('SELECT DISTINCT City as name FROM superstore;')
+  stateOptions.value = await queryService.executeQuery(
+    'SELECT DISTINCT State as name FROM superstore;'
+  )
+  cityOptions.value = await queryService.executeQuery(
+    'SELECT DISTINCT City as name FROM superstore;'
+  )
 })
 watch(
   [() => citySelectValues.value, () => stateSelectValues.value],
   async ([cityVal, stateVal]) => {
-    const queryStore = useQueryStore()
+    const { db } = queryStore
+
+    const repository = new Repository(db)
+    const queryService = new QueryService(repository)
 
     const filters = [
       { values: cityVal, field: 'City' },
@@ -47,20 +65,20 @@ watch(
 
     if (!cityVal.length && !stateVal.length) {
       const dataQuery = 'SELECT DISTINCT State, City FROM superstore'
-      const data = await queryStore.doQuery(dataQuery)
+      const data = await queryService.executeQuery(dataQuery)
       superstoreData.value = data
       return
     }
 
     if (!cityVal.length) {
-      const filterData = await queryStore.doQuery(filterQuery)
+      const filterData = await queryService.executeQuery(filterQuery)
       stateOptions.value = filterData?.map((row: any) => ({
         name: row.State
       }))
     }
 
     if (!stateVal.length) {
-      const filterData = await queryStore.doQuery(filterQuery)
+      const filterData = await queryService.executeQuery(filterQuery)
       cityOptions.value = filterData?.map((row: any) => ({
         name: row.City
       }))
@@ -87,11 +105,11 @@ watch(
         .join(' AND ')
     }
 
-    const data = await queryStore.doQuery(dataQuery)
+    const data = await queryService.executeQuery(dataQuery)
 
     superstoreData.value = data
 
-    const filterData = await queryStore.doQuery(filterQuery)
+    const filterData = await queryService.executeQuery(filterQuery)
 
     if (lastModifiedFilter.value?.field !== 'City') {
       cityOptions.value = [...new Set(data?.map((row: any) => row.City))].map((row: any) => ({
