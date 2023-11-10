@@ -4,7 +4,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useQueryStore } from '../../../driven/infrastructure/store/pinia/db'
 import { QueryService } from '../../../../core/application/services/queryService'
 import { Repository } from '../../../driven/infrastructure/database/duckdb/repository'
-import { nunjucks } from 'nunjucks'
+import nunjucks from 'nunjucks'
 
 const queryStore = useQueryStore()
 
@@ -67,12 +67,35 @@ watch(
 
     const activeFilters = filters.filter((filter) => filter.values.length > 0)
 
-    let dataQuery = `
-      SELECT State, City FROM superstore WHERE
-    `
-    let filterQuery = `
-      SELECT DISTINCT State, City FROM superstore
-    `
+    const dataQuery = nunjucks.renderString(
+      `
+        SELECT State, City FROM superstore WHERE
+        {% for filter in activeFilters %}
+          {{ filter.field }} IN ({% for value in filter.values %}'{{ value }}'{% if not loop.last %},{% endif %}{% endfor %})
+          {% if not loop.last %}
+            AND
+          {% endif %}
+        {% endfor %}
+      `,
+      {
+        activeFilters: activeFilters
+      }
+    )
+
+    let filterQuery = nunjucks.renderString(
+      `
+        SELECT DISTINCT State, City FROM superstore WHERE
+        {% for filter in activeFilters %}
+          {{ filter.field }} IN ({% for value in filter.values %}'{{ value }}'{% if not loop.last %},{% endif %}{% endfor %})
+          {% if not loop.last %}
+            AND
+          {% endif %}
+        {% endfor %}
+      `,
+      {
+        activeFilters: activeFilters
+      }
+    )
 
     for (const item of filters) {
       if (!item.values.length) {
@@ -84,23 +107,6 @@ watch(
     }
 
     lastModifiedFilter.value = filters.find((filter) => filter.values.length > 0)
-
-    if (activeFilters.length > 0) {
-      dataQuery += activeFilters
-        .map((filter) => {
-          const values = filter.values.map((value: any) => `'${value}'`).join(',')
-          return `${filter.field} IN (${values})`
-        })
-        .join(' AND ')
-
-      filterQuery += ' WHERE '
-      filterQuery += activeFilters
-        .map((filter) => {
-          const values = filter.values.map((value: any) => `'${value}'`).join(',')
-          return `${filter.field} IN (${values})`
-        })
-        .join(' AND ')
-    }
 
     const data = await queryService.executeQuery(dataQuery)
 
