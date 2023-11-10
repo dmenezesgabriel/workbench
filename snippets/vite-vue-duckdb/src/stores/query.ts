@@ -21,7 +21,7 @@ export const useQueryStore = defineStore('query', () => {
 
     await conn?.close()
 
-    return result?.toArray().map((row) => row.toJSON())
+    return result?.toArray().map((row: any) => row.toJSON())
   }
 
   async function initDB() {

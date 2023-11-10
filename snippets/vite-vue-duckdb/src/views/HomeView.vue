@@ -94,15 +94,17 @@ watch(
     const filterData = await queryStore.doQuery(filterQuery)
 
     if (lastModifiedFilter.value?.field !== 'City') {
-      cityOptions.value = [...new Set(data?.map((row) => row.City))].map((row: any) => ({
+      cityOptions.value = [...new Set(data?.map((row: any) => row.City))].map((row: any) => ({
         name: row
       }))
     }
 
     if (lastModifiedFilter.value?.field !== 'State') {
-      stateOptions.value = [...new Set(filterData?.map((row) => row.State))].map((row: any) => ({
-        name: row
-      }))
+      stateOptions.value = [...new Set(filterData?.map((row: any) => row.State))].map(
+        (row: any) => ({
+          name: row
+        })
+      )
     }
   }
 )

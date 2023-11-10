@@ -16,6 +16,7 @@
     "@apache-arrow/ts": "^13.0.0",
     "@duckdb/duckdb-wasm": "^1.27.1-dev120.0",
     "apache-arrow": "^13.0.0",
+    "nunjucks": "^3.2.4",
     "pinia": "^2.1.6",
     "vue": "^3.3.4",
     "vue-multiselect": "^3.0.0-beta.2",
