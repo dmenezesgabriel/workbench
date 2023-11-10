@@ -2,8 +2,7 @@ import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import * as duckdb from '@duckdb/duckdb-wasm'
 import { DatabaseManager } from '../../database/duckdb/db'
-import { QueryService } from '../../../../../core/application/services/queryService'
-import { Repository } from '../../database/duckdb/repository'
+import { createSuperStoreTable } from '../../database/duckdb/migrations'
 
 export const useQueryStore = defineStore('query', () => {
   const databaseManager = new DatabaseManager()
@@ -19,14 +18,7 @@ export const useQueryStore = defineStore('query', () => {
   }
 
   async function loadData() {
-    const repository = new Repository(db.value!)
-    const queryService = new QueryService(repository)
-    await queryService.executeQuery(
-      `
-      CREATE TABLE IF NOT EXISTS superstore AS
-      SELECT * FROM "http://localhost:5173/superstore.parquet"
-      `
-    )
+    await createSuperStoreTable(db.value!)
   }
 
   return {
